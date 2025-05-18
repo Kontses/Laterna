@@ -1,6 +1,8 @@
 <h1 align="center">✨ Laterna ✨</h1>
 
-![Laterna Logo!](frontend/public/laternalogo-full.png "Laterna"){ width="800" height="600" style="display: block; margin: 0 auto" }
+<p align="center">
+![Laterna Logo!](frontend/public/laternalogo-full.png "Laterna")
+</p>
 
 # Ανάλυση Εφαρμογής Laterna
 
