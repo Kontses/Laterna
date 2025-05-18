@@ -1,6 +1,10 @@
 <h1 align="center">✨ Laterna ✨</h1>
 
+![Laterna Logo!](frontend\public\laternalogo-full.png "Laterna")
+
 # Ανάλυση Εφαρμογής Laterna
+
+Ένα DEMO για το πως μπορεί να υλοποιηθεί η <a href="https://www.1431am.org/laterna/" target="laterna">Laterna</a> σε standalone εφαρμογή αλλά και browser.
 
 ## Γενική Επισκόπηση
 
@@ -16,12 +20,32 @@
 
 ## Αρχιτεκτονική
 
-- **Frontend**: React με TypeScript, Vite, Tailwind CSS
+- **Frontend**: React με TypeScript, Vite, Tailwind CSS, Shadcn UI
 - **Backend**: Node.js με Express
 - **Βάση Δεδομένων**: MongoDB
 - **Authentication**: Clerk
 - **File Storage**: Cloudinary
 - **Real-time επικοινωνία**: Socket.io
+
+## Frontend State Management
+
+Το frontend χρησιμοποιεί το Zustand για τη διαχείριση της κατάστασης. Χρησιμοποιούνται τα ακόλουθα stores:
+
+- `useAuthStore`: Διαχειρίζεται την κατάσταση ελέγχου ταυτότητας και την ιδιότητα του διαχειριστή.
+- `useChatStore`: Διαχειρίζεται δεδομένα chat σε πραγματικό χρόνο, συμπεριλαμβανομένων χρηστών, μηνυμάτων, κατάστασης online και δραστηριοτήτων χρηστών.
+- `useMusicStore`: Διαχειρίζεται δεδομένα σχετικά με τραγούδια, άλμπουμ και στατιστικά.
+- `usePlayerStore`: Διαχειρίζεται την κατάσταση του music player, συμπεριλαμβανομένου του τρέχοντος τραγουδιού, της αναπαραγωγής και της ουράς.
+
+## Δομή Layout Frontend
+
+Το κύριο layout της εφαρμογής περιλαμβάνει:
+
+- Αριστερή πλευρική μπάρα (`LeftSidebar`)
+- Κύρια περιοχή περιεχομένου
+- Δεξιά πλευρική μπάρα για τη δραστηριότητα φίλων (`FriendsActivity`)
+- Έλεγχοι αναπαραγωγής και audio player στο κάτω μέρος
+
+Το layout είναι responsive και οι πλευρικές μπάρες είναι resizable.
 
 ## Ρύθμιση .env αρχείων
 
