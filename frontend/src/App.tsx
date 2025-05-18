@@ -5,6 +5,7 @@ import { AuthenticateWithRedirectCallback } from "@clerk/clerk-react";
 import MainLayout from "./layout/MainLayout";
 import ChatPage from "./pages/chat/ChatPage";
 import AlbumPage from "./pages/album/AlbumPage";
+import ArtistPage from "./pages/artist/ArtistPage";
 import AdminPage from "./pages/admin/AdminPage";
 import AboutPage from "./pages/about/AboutPage";
 
@@ -26,6 +27,7 @@ function App() {
 					<Route path='/' element={<HomePage />} />
 					<Route path='/chat' element={<ChatPage />} />
 					<Route path='/albums/:albumId' element={<AlbumPage />} />
+					<Route path='/artists/:artistId' element={<ArtistPage />} />
 					<Route path='/about' element={<AboutPage />} />
 					<Route path='*' element={<NotFoundPage />} />
 				</Route>

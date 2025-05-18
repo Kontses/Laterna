@@ -2,9 +2,11 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useMusicStore } from "@/stores/useMusicStore";
 import { usePlayerStore } from "@/stores/usePlayerStore";
+import { useAlbumDescriptionStore } from "@/stores/useAlbumDescriptionStore"; // Import the store
 import { Clock, Pause, Play, Download } from "lucide-react";
-import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useEffect } from "react"; // Removed useState
+import { useParams, Link } from "react-router-dom";
+import Topbar from "@/components/Topbar";
 
 export const formatDuration = (seconds: number) => {
 	const minutes = Math.floor(seconds / 60);
@@ -16,11 +18,18 @@ const AlbumPage = () => {
 	const { albumId } = useParams();
 	const { fetchAlbumById, currentAlbum, isLoading } = useMusicStore();
 	const { currentSong, isPlaying, playAlbum, togglePlay } = usePlayerStore();
-	const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false); // State for description expansion
+	const { setAlbumDescription } = useAlbumDescriptionStore(); // Get setAlbumDescription from the store
 
 	useEffect(() => {
 		if (albumId) fetchAlbumById(albumId);
 	}, [fetchAlbumById, albumId]);
+
+	useEffect(() => {
+		if (currentAlbum?.description) {
+			setAlbumDescription(currentAlbum.description); // Set description in the store
+		}
+	}, [currentAlbum, setAlbumDescription]);
+
 
 	if (isLoading) return null;
 
@@ -43,6 +52,7 @@ const AlbumPage = () => {
 
 	return (
 		<div className='h-full'>
+			<Topbar />
 			<ScrollArea className='h-full rounded-md'>
 				{/* Main Content */}
 				<div className='relative min-h-full'>
@@ -63,11 +73,13 @@ const AlbumPage = () => {
 							/>
 							<div className='flex flex-col justify-end'>
 								<p className='text-sm font-medium'>Album</p>
-								<h1 className='text-7xl font-bold my-4'>{currentAlbum?.title}</h1>
+								<h1 className='text-5xl font-bold my-4'>{currentAlbum?.title}</h1>
 								<div className='flex items-center gap-2 text-sm text-zinc-100'>
-									<span className='font-medium text-white'>{currentAlbum?.artist}</span>
+									<Link to={`/artists/${currentAlbum?.artistId}`} className='hover:underline'>
+										<span className='font-medium text-white'>{currentAlbum?.artist}</span>
+									</Link>
 									<span>• {currentAlbum?.songs.length} songs</span>
-									<span>• {currentAlbum?.releaseYear}</span>
+									<span>• {currentAlbum?.year}</span>
 									<Button
 										variant="ghost"
 										size="sm"
@@ -86,35 +98,14 @@ const AlbumPage = () => {
 							</div>
 						</div>
 
-						{/* Album Description */}
-						{currentAlbum?.description && (
-							<div className='px-6 py-4 text-sm text-zinc-400'>
-								{currentAlbum.description.length > 200 && !isDescriptionExpanded ? (
-									<>
-										<span dangerouslySetInnerHTML={{ __html: currentAlbum.description.substring(0, 200).replace(/\n/g, '<br>') + '...' }} />
-										<Button variant="link" size="sm" onClick={() => setIsDescriptionExpanded(true)} className="text-zinc-100 p-0 h-auto">
-											Expand
-										</Button>
-									</>
-								) : (
-									<>
-										<span dangerouslySetInnerHTML={{ __html: currentAlbum.description.replace(/\n/g, '<br>') }} />
-										{currentAlbum.description.length > 200 && isDescriptionExpanded && (
-											<Button variant="link" size="sm" onClick={() => setIsDescriptionExpanded(false)} className="text-zinc-100 p-0 h-auto">
-												Collapse
-											</Button>
-										)}
-									</>
-								)}
-							</div>
-						)}
+						{/* Album Description - Removed from here */}
 
 						{/* play button */}
 						<div className='px-6 pb-4 flex items-center gap-6'>
 							<Button
 								onClick={handlePlayAlbum}
 								size='icon'
-								className='w-14 h-14 rounded-full bg-green-500 hover:bg-green-400 
+								className='w-14 h-14 rounded-full bg-green-500 hover:bg-green-400
                 hover:scale-105 transition-all'
 							>
 								{isPlaying && currentAlbum?.songs.some((song) => song._id === currentSong?._id) ? (
@@ -129,7 +120,7 @@ const AlbumPage = () => {
 						<div className='bg-black/20 backdrop-blur-sm'>
 							{/* table header */}
 							<div
-								className='grid grid-cols-[16px_5fr_60px_auto] gap-4 px-10 py-2 text-sm 
+								className='grid grid-cols-[16px_5fr_60px_auto] gap-4 px-10 py-2 text-sm
             text-zinc-400 border-b border-white/5'
 							>
 								<div>#</div>
@@ -150,7 +141,7 @@ const AlbumPage = () => {
 											<div
 												key={song._id}
 												onClick={() => handlePlaySong(index)}
-												className={`grid grid-cols-[16px_5fr_60px_auto] gap-4 px-4 py-2 text-sm 
+												className={`grid grid-cols-[16px_5fr_60px_auto] gap-4 px-4 py-2 text-sm
                       text-zinc-400 hover:bg-white/5 rounded-md group cursor-pointer
                       `}
 											>
@@ -170,7 +161,9 @@ const AlbumPage = () => {
 
 													<div>
 														<div className={`font-medium text-white`}>{song.title}</div>
-														<div>{song.artist}</div>
+														<Link to={`/artists/${song?.artistId}`} className='hover:underline'>
+															{song.artist}
+														</Link>
 													</div>
 												</div>
 												<div className='flex items-center'>{formatDuration(song.duration)}</div>

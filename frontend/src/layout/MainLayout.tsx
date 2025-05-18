@@ -5,9 +5,12 @@ import FriendsActivity from "./components/FriendsActivity";
 import AudioPlayer from "./components/AudioPlayer";
 import { PlaybackControls } from "./components/PlaybackControls";
 import { useEffect, useState } from "react";
+import AlbumDescriptionPanel from "./components/AlbumDescriptionPanel"; // Import the new component
+import { useAlbumDescriptionStore } from "@/stores/useAlbumDescriptionStore"; // Import the store
 
 const MainLayout = () => {
 	const [isMobile, setIsMobile] = useState(false);
+	const { showAlbumDescription, albumDescription } = useAlbumDescriptionStore(); // Use state from the store
 
 	useEffect(() => {
 		const checkMobile = () => {
@@ -32,7 +35,7 @@ const MainLayout = () => {
 
 				{/* Main content */}
 				<ResizablePanel defaultSize={isMobile ? 80 : 60}>
-					<Outlet />
+					<Outlet /> {/* Removed context prop */}
 				</ResizablePanel>
 
 				{!isMobile && (
@@ -40,13 +43,18 @@ const MainLayout = () => {
 						<ResizableHandle className='w-2 bg-black rounded-lg transition-colors' />
 
 						{/* right sidebar */}
-						<ResizablePanel defaultSize={20} minSize={0} maxSize={25} collapsedSize={0}>
-							<FriendsActivity />
+						<ResizablePanel defaultSize={showAlbumDescription ? 25 : 20} minSize={0} maxSize={showAlbumDescription ? 30 : 25} collapsedSize={0}>
+							{showAlbumDescription && albumDescription ? (
+								<AlbumDescriptionPanel description={albumDescription} />
+							) : (
+								<FriendsActivity />
+							)}
 						</ResizablePanel>
 					</>
 				)}
 			</ResizablePanelGroup>
 
+			{/* PlaybackControls will get toggle function from the store */}
 			<PlaybackControls />
 		</div>
 	);
