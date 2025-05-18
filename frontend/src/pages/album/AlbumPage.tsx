@@ -5,7 +5,7 @@ import { usePlayerStore } from "@/stores/usePlayerStore";
 import { useAlbumDescriptionStore } from "@/stores/useAlbumDescriptionStore"; // Import the store
 import { Clock, Pause, Play, Download } from "lucide-react";
 import { useEffect } from "react"; // Removed useState
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import Topbar from "@/components/Topbar";
 
 export const formatDuration = (seconds: number) => {
@@ -75,9 +75,11 @@ const AlbumPage = () => {
 								<p className='text-sm font-medium'>Album</p>
 								<h1 className='text-5xl font-bold my-4'>{currentAlbum?.title}</h1>
 								<div className='flex items-center gap-2 text-sm text-zinc-100'>
-									<span className='font-medium text-white'>{currentAlbum?.artist}</span>
+									<Link to={`/artists/${currentAlbum?.artistId}`} className='hover:underline'>
+										<span className='font-medium text-white'>{currentAlbum?.artist}</span>
+									</Link>
 									<span>• {currentAlbum?.songs.length} songs</span>
-									<span>• {currentAlbum?.releaseYear}</span>
+									<span>• {currentAlbum?.year}</span>
 									<Button
 										variant="ghost"
 										size="sm"
@@ -103,7 +105,7 @@ const AlbumPage = () => {
 							<Button
 								onClick={handlePlayAlbum}
 								size='icon'
-								className='w-14 h-14 rounded-full bg-green-500 hover:bg-green-400 
+								className='w-14 h-14 rounded-full bg-green-500 hover:bg-green-400
                 hover:scale-105 transition-all'
 							>
 								{isPlaying && currentAlbum?.songs.some((song) => song._id === currentSong?._id) ? (
@@ -118,7 +120,7 @@ const AlbumPage = () => {
 						<div className='bg-black/20 backdrop-blur-sm'>
 							{/* table header */}
 							<div
-								className='grid grid-cols-[16px_5fr_60px_auto] gap-4 px-10 py-2 text-sm 
+								className='grid grid-cols-[16px_5fr_60px_auto] gap-4 px-10 py-2 text-sm
             text-zinc-400 border-b border-white/5'
 							>
 								<div>#</div>
@@ -139,7 +141,7 @@ const AlbumPage = () => {
 											<div
 												key={song._id}
 												onClick={() => handlePlaySong(index)}
-												className={`grid grid-cols-[16px_5fr_60px_auto] gap-4 px-4 py-2 text-sm 
+												className={`grid grid-cols-[16px_5fr_60px_auto] gap-4 px-4 py-2 text-sm
                       text-zinc-400 hover:bg-white/5 rounded-md group cursor-pointer
                       `}
 											>
@@ -159,7 +161,9 @@ const AlbumPage = () => {
 
 													<div>
 														<div className={`font-medium text-white`}>{song.title}</div>
-														<div>{song.artist}</div>
+														<Link to={`/artists/${song?.artistId}`} className='hover:underline'>
+															{song.artist}
+														</Link>
 													</div>
 												</div>
 												<div className='flex items-center'>{formatDuration(song.duration)}</div>

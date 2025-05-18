@@ -4,6 +4,7 @@ import { usePlayerStore } from "@/stores/usePlayerStore";
 import { useAlbumDescriptionStore } from "@/stores/useAlbumDescriptionStore"; // Import the store
 import { Laptop2, ListMusic, Mic2, Pause, Play, Repeat, Shuffle, SkipBack, SkipForward, Volume1, Info } from "lucide-react"; // Import Info icon
 import { useEffect, useRef, useState } from "react";
+import { Link } from "react-router-dom";
 
 const formatTime = (seconds: number) => {
 	const minutes = Math.floor(seconds / 60);
@@ -67,9 +68,9 @@ export const PlaybackControls = () => {
 								<div className='font-medium truncate hover:underline cursor-pointer'>
 									{currentSong.title}
 								</div>
-								<div className='text-sm text-zinc-400 truncate hover:underline cursor-pointer'>
+								<Link to={`/artists/${currentSong?.artistId}`} className='text-sm text-zinc-400 truncate hover:underline'>
 									{currentSong.artist}
-								</div>
+								</Link>
 							</div>
 						</>
 					)}

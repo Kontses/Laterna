@@ -2,6 +2,7 @@ export interface Song {
 	_id: string;
 	title: string;
 	artist: string;
+	artistId: string;
 	albumId: string | null;
 	imageUrl: string;
 	audioUrl: string;
@@ -14,10 +15,21 @@ export interface Album {
 	_id: string;
 	title: string;
 	artist: string;
-	imageUrl: string;
-	releaseYear: number;
-	description?: string; // Added optional description field
+	artistId: string;
+	coverUrl: string;
+	year: number;
+	type: string; // e.g., "Album", "EP"
+	description?: string;
 	songs: Song[];
+}
+
+export interface Single {
+	_id: string;
+	title: string;
+	artist: string;
+	coverUrl: string;
+	year: number;
+	type: string; // e.g., "Single"
 }
 
 export interface Stats {
@@ -41,4 +53,12 @@ export interface User {
 	clerkId: string;
 	fullName: string;
 	imageUrl: string;
+}
+
+export interface Artist {
+	_id: string;
+	name: string;
+	albums: Album[];
+	singles: Single[];
+	about: string;
 }
