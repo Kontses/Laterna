@@ -6,6 +6,7 @@ import { useAlbumDescriptionStore } from "@/stores/useAlbumDescriptionStore"; //
 import { Clock, Pause, Play, Download } from "lucide-react";
 import { useEffect } from "react"; // Removed useState
 import { useParams } from "react-router-dom";
+import Topbar from "@/components/Topbar";
 
 export const formatDuration = (seconds: number) => {
 	const minutes = Math.floor(seconds / 60);
@@ -51,6 +52,7 @@ const AlbumPage = () => {
 
 	return (
 		<div className='h-full'>
+			<Topbar />
 			<ScrollArea className='h-full rounded-md'>
 				{/* Main Content */}
 				<div className='relative min-h-full'>
@@ -71,7 +73,7 @@ const AlbumPage = () => {
 							/>
 							<div className='flex flex-col justify-end'>
 								<p className='text-sm font-medium'>Album</p>
-								<h1 className='text-7xl font-bold my-4'>{currentAlbum?.title}</h1>
+								<h1 className='text-5xl font-bold my-4'>{currentAlbum?.title}</h1>
 								<div className='flex items-center gap-2 text-sm text-zinc-100'>
 									<span className='font-medium text-white'>{currentAlbum?.artist}</span>
 									<span>• {currentAlbum?.songs.length} songs</span>
