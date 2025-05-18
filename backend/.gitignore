@@ -1,5 +1,4 @@
 .env
 .env.*
-backend/.env.local
 node_modules
 tmp
