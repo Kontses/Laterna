@@ -2,8 +2,9 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useMusicStore } from "@/stores/useMusicStore";
 import { usePlayerStore } from "@/stores/usePlayerStore";
+import { useAlbumDescriptionStore } from "@/stores/useAlbumDescriptionStore"; // Import the store
 import { Clock, Pause, Play, Download } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect } from "react"; // Removed useState
 import { useParams } from "react-router-dom";
 
 export const formatDuration = (seconds: number) => {
@@ -16,11 +17,18 @@ const AlbumPage = () => {
 	const { albumId } = useParams();
 	const { fetchAlbumById, currentAlbum, isLoading } = useMusicStore();
 	const { currentSong, isPlaying, playAlbum, togglePlay } = usePlayerStore();
-	const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false); // State for description expansion
+	const { setAlbumDescription } = useAlbumDescriptionStore(); // Get setAlbumDescription from the store
 
 	useEffect(() => {
 		if (albumId) fetchAlbumById(albumId);
 	}, [fetchAlbumById, albumId]);
+
+	useEffect(() => {
+		if (currentAlbum?.description) {
+			setAlbumDescription(currentAlbum.description); // Set description in the store
+		}
+	}, [currentAlbum, setAlbumDescription]);
+
 
 	if (isLoading) return null;
 
@@ -86,28 +94,7 @@ const AlbumPage = () => {
 							</div>
 						</div>
 
-						{/* Album Description */}
-						{currentAlbum?.description && (
-							<div className='px-6 py-4 text-sm text-zinc-400'>
-								{currentAlbum.description.length > 200 && !isDescriptionExpanded ? (
-									<>
-										<span dangerouslySetInnerHTML={{ __html: currentAlbum.description.substring(0, 200).replace(/\n/g, '<br>') + '...' }} />
-										<Button variant="link" size="sm" onClick={() => setIsDescriptionExpanded(true)} className="text-zinc-100 p-0 h-auto">
-											Expand
-										</Button>
-									</>
-								) : (
-									<>
-										<span dangerouslySetInnerHTML={{ __html: currentAlbum.description.replace(/\n/g, '<br>') }} />
-										{currentAlbum.description.length > 200 && isDescriptionExpanded && (
-											<Button variant="link" size="sm" onClick={() => setIsDescriptionExpanded(false)} className="text-zinc-100 p-0 h-auto">
-												Collapse
-											</Button>
-										)}
-									</>
-								)}
-							</div>
-						)}
+						{/* Album Description - Removed from here */}
 
 						{/* play button */}
 						<div className='px-6 pb-4 flex items-center gap-6'>

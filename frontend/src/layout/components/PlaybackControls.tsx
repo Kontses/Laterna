@@ -1,7 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { usePlayerStore } from "@/stores/usePlayerStore";
-import { Laptop2, ListMusic, Mic2, Pause, Play, Repeat, Shuffle, SkipBack, SkipForward, Volume1 } from "lucide-react";
+import { useAlbumDescriptionStore } from "@/stores/useAlbumDescriptionStore"; // Import the store
+import { Laptop2, ListMusic, Mic2, Pause, Play, Repeat, Shuffle, SkipBack, SkipForward, Volume1, Info } from "lucide-react"; // Import Info icon
 import { useEffect, useRef, useState } from "react";
 
 const formatTime = (seconds: number) => {
@@ -12,6 +13,7 @@ const formatTime = (seconds: number) => {
 
 export const PlaybackControls = () => {
 	const { currentSong, isPlaying, togglePlay, playNext, playPrevious } = usePlayerStore();
+	const { toggleAlbumDescription } = useAlbumDescriptionStore(); // Get toggle function from the store
 
 	const [volume, setVolume] = useState(75);
 	const [currentTime, setCurrentTime] = useState(0);
@@ -142,6 +144,16 @@ export const PlaybackControls = () => {
 					</Button>
 					<Button size='icon' variant='ghost' className='hover:text-white text-zinc-400'>
 						<Laptop2 className='h-4 w-4' />
+					</Button>
+
+					{/* Info button */}
+					<Button
+						size='icon'
+						variant='ghost'
+						className='hover:text-white text-zinc-400'
+						onClick={() => toggleAlbumDescription()} // Call toggle function from the store
+					>
+						<Info className='h-4 w-4' />
 					</Button>
 
 					<div className='flex items-center gap-2'>
