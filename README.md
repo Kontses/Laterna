@@ -1,7 +1,7 @@
 <h1 align="center">✨ Laterna ✨</h1>
 
 <p align="center">
-![Laterna Logo!](frontend/public/laternalogo-full.png "Laterna")
+<img src="frontend/public/laternalogo-full.png" alt="Laterna Logo!" style="display: block; margin: 0 auto;">
 </p>
 
 # Ανάλυση Εφαρμογής Laterna
