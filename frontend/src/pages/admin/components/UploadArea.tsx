@@ -385,7 +385,7 @@ const UploadArea = () => {
                         <SelectItem value="Blues">Blues</SelectItem>
                         <SelectItem value="Classical">Classical</SelectItem>
                         <SelectItem value="Dance">Dance</SelectItem>
-                        <SelectItem value="DJ Set">DJ Set</SelectItem> {/* Added DJ Set */}
+                        <SelectItem value="DJ Set">DJ Set</SelectItem>
                         <SelectItem value="Electronic">Electronic</SelectItem>
                         <SelectItem value="Folk">Folk</SelectItem>
                         <SelectItem value="Hip Hop/Rap">Hip Hop/Rap</SelectItem>
