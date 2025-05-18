@@ -30,7 +30,7 @@ const Topbar = () => {
 				<img src='/laternalogo.png' className='size-8' alt='Laterna logo' />
 				Laterna
 			</Link>
-			<div className="relative flex-grow max-w-md">
+			<div className="relative flex-grow max-w-md rounded-full hover:shadow-[0_0_10px_rgba(255,190,255,0.8)] transition-all duration-200">
 				<Search className="absolute left-3 top-1/2 transform -translate-y-1/2 size-5 text-zinc-400" />
 				<Input
 					type="text"
