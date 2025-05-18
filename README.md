@@ -1,10 +1,10 @@
 <h1 align="center">✨ Laterna ✨</h1>
 
-![Laterna Logo!](frontend\public\laternalogo-full.png "Laterna")
+![Laterna Logo!](frontend/public/laternalogo-full.png "Laterna")
 
 # Ανάλυση Εφαρμογής Laterna
 
-Ένα DEMO για το πως μπορεί να υλοποιηθεί η <a href="https://www.1431am.org/laterna/" target="laterna">Laterna</a> σε standalone εφαρμογή αλλά και browser.
+Ένα DEMO για το πως μπορεί να υλοποιηθεί η <a href="https://www.1431am.org/laterna/" target="laterna">Laterna</a> σε standalone εφαρμογή και browser.
 
 ## Γενική Επισκόπηση
 
