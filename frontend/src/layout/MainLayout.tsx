@@ -7,6 +7,7 @@ import { PlaybackControls } from "./components/PlaybackControls";
 import { useEffect, useState } from "react";
 import AlbumDescriptionPanel from "./components/AlbumDescriptionPanel"; // Import the new component
 import { useAlbumDescriptionStore } from "@/stores/useAlbumDescriptionStore"; // Import the store
+import Topbar from "@/components/Topbar"; // Import Topbar
 
 const MainLayout = () => {
 	const [isMobile, setIsMobile] = useState(false);
@@ -24,6 +25,7 @@ const MainLayout = () => {
 
 	return (
 		<div className='h-screen bg-black text-white flex flex-col'>
+			<Topbar /> {/* Add Topbar here */}
 			<ResizablePanelGroup direction='horizontal' className='flex-1 flex h-full overflow-hidden p-2'>
 				<AudioPlayer />
 				{/* left sidebar */}

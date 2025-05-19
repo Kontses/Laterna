@@ -7,6 +7,7 @@ const ArtistPage: React.FC = () => {
   const artist: Artist = {
     _id: "placeholder-id", // Placeholder
     name: "Artist Name", // Placeholder
+    profilePhotoUrl: "placeholder-url", // Placeholder
     albums: [], // Placeholder
     singles: [], // Placeholder
     about: "Artist description goes here." // Placeholder
@@ -16,6 +17,11 @@ const ArtistPage: React.FC = () => {
     <div className="container mx-auto p-4">
       {/* Artist Name */}
       <h1 className="text-3xl font-bold mb-4">{artist.name}</h1>
+
+      {/* Profile Photo */}
+      <div className="mb-8">
+        <img src={artist.profilePhotoUrl} alt={`${artist.name}'s profile`} className="w-32 h-32 rounded-full object-cover" />
+      </div>
 
       {/* Albums Section */}
       <section className="mb-8">

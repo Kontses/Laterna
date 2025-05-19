@@ -17,6 +17,7 @@ export interface Album {
 	artist: string;
 	artistId: string;
 	coverUrl: string;
+	imageUrl: string;
 	year: number;
 	type: string; // e.g., "Album", "EP"
 	description?: string;
@@ -61,4 +62,5 @@ export interface Artist {
 	albums: Album[];
 	singles: Single[];
 	about: string;
+	profilePhotoUrl: string;
 }
