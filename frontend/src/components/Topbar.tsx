@@ -1,9 +1,8 @@
-import { SignedOut, UserButton } from "@clerk/clerk-react";
+import { SignedOut, UserButton, SignInButton } from "@clerk/clerk-react";
 import { LayoutDashboardIcon, Search } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
-import SignInOAuthButtons from "./SignInOAuthButtons";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "./ui/button";
@@ -49,7 +48,7 @@ const Topbar = () => {
 				)}
 
 				<SignedOut>
-					<SignInOAuthButtons />
+					<SignInButton mode="modal" />
 				</SignedOut>
 
 				<UserButton />
