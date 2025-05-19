@@ -1,17 +1,50 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
 import { Artist, Album, Single } from '../../types';
+import { axiosInstance } from '@/lib/axios'; // Assuming axiosInstance is used for API calls
 
 const ArtistPage: React.FC = () => {
-  // TODO: Fetch artist data based on the artist ID from the URL
+  const { artistId } = useParams<{ artistId: string }>();
+  const [artist, setArtist] = useState<Artist | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const artist: Artist = {
-    _id: "placeholder-id", // Placeholder
-    name: "Artist Name", // Placeholder
-    profilePhotoUrl: "placeholder-url", // Placeholder
-    albums: [], // Placeholder
-    singles: [], // Placeholder
-    about: "Artist description goes here." // Placeholder
-  };
+  useEffect(() => {
+    const fetchArtistData = async () => {
+      if (!artistId) {
+        setError("Artist ID is missing.");
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        setIsLoading(true);
+        const response = await axiosInstance.get(`/api/artists/${artistId}`);
+        setArtist(response.data);
+        setError(null);
+      } catch (err) {
+        console.error("Error fetching artist data:", err);
+        setError("Failed to fetch artist data.");
+        setArtist(null);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchArtistData();
+  }, [artistId]);
+
+  if (isLoading) {
+    return <div className="container mx-auto p-4">Loading artist data...</div>;
+  }
+
+  if (error) {
+    return <div className="container mx-auto p-4 text-red-500">Error: {error}</div>;
+  }
+
+  if (!artist) {
+    return <div className="container mx-auto p-4">Artist not found.</div>;
+  }
 
   return (
     <div className="container mx-auto p-4">

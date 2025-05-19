@@ -20,6 +20,35 @@ const uploadToCloudinary = async (file, folder, publicId = null, resourceType = 
 	}
 };
 
+import { Artist } from "../models/artist.model.js"; // Import Artist model
+
+export const createArtist = async (req, res, next) => {
+	try {
+		const { name, about } = req.body;
+		const profilePhotoFile = req.files?.profilePhoto; // Get the uploaded file
+
+		let profilePhotoUrl = "";
+		if (profilePhotoFile) {
+			// Upload photo to Cloudinary
+			// TODO: Define a specific folder and public ID naming convention for artist photos
+			profilePhotoUrl = await uploadToCloudinary(profilePhotoFile, "laterna/artists/profiles");
+		}
+
+		const artist = new Artist({
+			name,
+			profilePhotoUrl,
+			about,
+		});
+
+		await artist.save();
+
+		res.status(201).json(artist);
+	} catch (error) {
+		console.error("Error creating artist:", error);
+		next(error);
+	}
+};
+
 export const createSong = async (req, res, next) => {
 	try {
 		if (!req.files || !req.files.audioFile || !req.files.imageFile) {

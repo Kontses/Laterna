@@ -4,6 +4,7 @@ const albumSchema = new mongoose.Schema(
 	{
 		title: { type: String, required: true },
 		artist: { type: String, required: true },
+		artistId: { type: String, required: true }, // Added artistId
 		imageUrl: { type: String, required: true },
 		releaseDate: { type: Date, required: true }, // Changed to Date
 		generalGenre: { type: String }, // Added generalGenre

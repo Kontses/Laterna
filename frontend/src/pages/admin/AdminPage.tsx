@@ -2,11 +2,14 @@ import { useAuthStore } from "@/stores/useAuthStore";
 import Header from "./components/Header";
 import DashboardStats from "./components/DashboardStats";
 import UploadArea from "./components/UploadArea"; // Import the new component
-import { useEffect } from "react";
+import AddArtistForm from "./components/AddArtistForm"; // Import AddArtistForm
+import { Button } from "@/components/ui/button"; // Import Button
+import { useEffect, useState } from "react"; // Import useState
 import { useMusicStore } from "@/stores/useMusicStore";
 
 const AdminPage = () => {
 	const { isAdmin, isLoading } = useAuthStore();
+	const [showAddArtistForm, setShowAddArtistForm] = useState(false); // State to control form visibility
 
 	const { fetchAlbums, fetchSongs, fetchStats } = useMusicStore();
 
@@ -26,6 +29,25 @@ const AdminPage = () => {
 			<Header />
 
 			<DashboardStats />
+
+			{/* Add Artist Button or Form */}
+			<div className="mb-4">
+				{!showAddArtistForm && (
+					<Button variant="outline" onClick={() => setShowAddArtistForm(true)}>
+						Add New Artist
+					</Button>
+				)}
+				{showAddArtistForm && (
+					<AddArtistForm
+						onArtistAdded={() => {
+							// TODO: Refresh artist list after adding a new artist
+							console.log("Artist added, refresh list if needed.");
+							setShowAddArtistForm(false); // Hide form after adding
+						}}
+						onCancel={() => setShowAddArtistForm(false)} // Hide form on cancel
+					/>
+				)}
+			</div>
 
 			{/* Replace Tabs with UploadArea */}
 			<UploadArea />
