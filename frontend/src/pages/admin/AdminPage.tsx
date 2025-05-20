@@ -31,6 +31,7 @@ const AdminPage = () => {
 			<DashboardStats />
 
 			{/* Add Artist Button or Form */}
+			<h3 className="text-lg font-semibold text-white mb-4">1. Create a new Artist profile that doesn't exist</h3>
 			<div className="mb-4">
 				{!showAddArtistForm && (
 					<Button variant="outline" onClick={() => setShowAddArtistForm(true)}>

@@ -257,6 +257,7 @@ const UploadArea = () => {
 
   return (
     <div className='space-y-6'>
+      <h3 className="text-lg font-semibold text-white">2. Add an Album or Single</h3>
        <div
         className={`border-2 border-dashed rounded-lg p-6 text-center ${
           isDragging ? 'border-blue-500 bg-blue-900/20' : 'border-zinc-700 bg-zinc-800/50'
