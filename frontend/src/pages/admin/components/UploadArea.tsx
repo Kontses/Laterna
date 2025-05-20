@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react'; // Import useEffect
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Upload } from "lucide-react";
@@ -38,16 +38,40 @@ const UploadArea = () => {
   const imageInputRef = useRef<HTMLInputElement>(null);
   const { getToken } = useAuth(); // Get getToken from useAuth
 
+  const [artists, setArtists] = useState<any[]>([]); // State to store artists
+  const [loadingArtists, setLoadingArtists] = useState(true); // State to manage loading state of artists
+
+  useEffect(() => {
+    const fetchArtists = async () => {
+      try {
+        const token = await getToken();
+        const response = await axiosInstance.get("/api/admin/artists", {
+          headers: {
+            "Authorization": `Bearer ${token}`,
+          },
+        });
+        setArtists(response.data);
+      } catch (error) {
+        console.error("Error fetching artists:", error);
+        toast.error("Failed to load artists.");
+      } finally {
+        setLoadingArtists(false);
+      }
+    };
+
+    fetchArtists();
+  }, [getToken]); // Fetch artists when the component mounts or getToken changes
+
 
   const [singleSongDetails, setSingleSongDetails] = useState({
     title: "",
-    artist: "",
+    artistId: "", // Change to artistId for single songs as well
     // Add other single song fields as needed (e.g., genre, tags, description)
   });
 
   const [albumDetails, setAlbumDetails] = useState({
     title: "",
-    artist: "",
+    artistId: "", // Change to artistId
     releaseDate: "", // Change to releaseDate string
     generalGenre: "", // Add generalGenre
     specificGenres: "", // Store as raw string for input
@@ -158,7 +182,7 @@ const UploadArea = () => {
 
     try {
       const token = await getToken(); // Get the token
-      const response = await axiosInstance.post("/admin/upload", formData, {
+      const response = await axiosInstance.post("/api/admin/upload", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
           "Authorization": `Bearer ${token}`, // Add Authorization header
@@ -171,8 +195,8 @@ const UploadArea = () => {
       // Clear form
       setAudioFiles([]);
       setImageFile(null);
-      setSingleSongDetails({ title: "", artist: "" });
-      setAlbumDetails({ title: "", artist: "", releaseDate: "", generalGenre: "", specificGenres: "" as string, description: "" }); // Clear specificGenres as raw string and add description
+      setSingleSongDetails({ title: "", artistId: "" }); // Clear artistId instead of artist
+      setAlbumDetails({ title: "", artistId: "", releaseDate: "", generalGenre: "", specificGenres: "" as string, description: "" }); // Clear specificGenres as raw string and add description
       setAlbumSongsDetails([]);
        if (fileInputRef.current) fileInputRef.current.value = "";
        if (imageInputRef.current) imageInputRef.current.value = "";
@@ -318,12 +342,18 @@ const UploadArea = () => {
                 </div>
                  <div className='space-y-2'>
                   <label className='text-sm font-medium'>Artist</label>
-                  <Input
-                    value={singleSongDetails.artist}
-                    onChange={(e) => setSingleSongDetails({ ...singleSongDetails, artist: e.target.value })}
-                    className='bg-zinc-800 border-zinc-700'
-                    placeholder='Enter artist name'
-                  />
+                   <Select onValueChange={(value) => setSingleSongDetails({ ...singleSongDetails, artistId: value })} value={singleSongDetails.artistId}>
+                    <SelectTrigger className="w-full bg-zinc-800 border-zinc-700">
+                      <SelectValue placeholder={loadingArtists ? "Loading artists..." : "Select an artist"} />
+                    </SelectTrigger>
+                    <SelectContent className='bg-zinc-900 text-white border-zinc-700'>
+                      {artists.map(artist => (
+                        <SelectItem key={artist._id} value={artist._id}>
+                          {artist.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 {/* Add other single song fields here */}
             </div>
@@ -342,12 +372,18 @@ const UploadArea = () => {
                 </div>
                 <div className='space-y-2'>
                   <label className='text-sm font-medium'>Artist</label>
-                  <Input
-                    value={albumDetails.artist}
-                    onChange={(e) => setAlbumDetails({ ...albumDetails, artist: e.target.value })}
-                    className='bg-zinc-800 border-zinc-700'
-                    placeholder='Enter artist name'
-                  />
+                  <Select onValueChange={(value) => setAlbumDetails({ ...albumDetails, artistId: value })} value={albumDetails.artistId}>
+                    <SelectTrigger className="w-full bg-zinc-800 border-zinc-700">
+                      <SelectValue placeholder={loadingArtists ? "Loading artists..." : "Select an artist"} />
+                    </SelectTrigger>
+                    <SelectContent className='bg-zinc-900 text-white border-zinc-700'>
+                      {artists.map(artist => (
+                        <SelectItem key={artist._id} value={artist._id}>
+                          {artist.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                  <div className='space-y-2'>
                   <label className='text-sm font-medium'>Release Date</label>

@@ -22,6 +22,16 @@ const uploadToCloudinary = async (file, folder, publicId = null, resourceType = 
 
 import { Artist } from "../models/artist.model.js"; // Import Artist model
 
+export const getAllArtists = async (req, res, next) => {
+	try {
+		const artists = await Artist.find();
+		res.status(200).json(artists);
+	} catch (error) {
+		console.error("Error fetching artists:", error);
+		next(error);
+	}
+};
+
 export const createArtist = async (req, res, next) => {
 	try {
 		const { name, about } = req.body;
@@ -30,7 +40,7 @@ export const createArtist = async (req, res, next) => {
 		let profilePhotoUrl = "";
 		if (profilePhotoFile) {
 			const artistName = name;
-			const folder = `laterna/artist/${artistName}`;
+			const folder = `laterna/artists/${artistName}`; // Changed folder path to laterna/artists
 			const publicId = `${artistName} - profile pic`;
 			// Upload photo to Cloudinary
 			profilePhotoUrl = await uploadToCloudinary(profilePhotoFile, folder, publicId);
@@ -182,11 +192,11 @@ export const handleUpload = async (req, res, next) => {
 			// Check if an album with the same title and artist already exists
 			const existingAlbum = await Album.findOne({
 				title: parsedAlbumDetails.title,
-				artist: parsedAlbumDetails.artist,
+				artistId: parsedAlbumDetails.artistId, // Use artistId
 			});
 
 			if (existingAlbum) {
-				console.log(`Existing album found: ${existingAlbum.title} by ${existingAlbum.artist}. Overwriting.`);
+				console.log(`Existing album found: ${existingAlbum.title} by artist ID ${existingAlbum.artistId}. Overwriting.`);
 				// If existing album found, update it
 				album = existingAlbum;
 				album.imageUrl = imageUrl;
@@ -198,11 +208,11 @@ export const handleUpload = async (req, res, next) => {
 				await Song.deleteMany({ albumId: album._id });
 				album.songs = []; // Clear song references in the album
 			} else {
-				console.log(`No existing album found. Creating a new album: ${parsedAlbumDetails.title} by ${parsedAlbumDetails.artist}.`);
+				console.log(`No existing album found. Creating a new album: ${parsedAlbumDetails.title} with artist ID ${parsedAlbumDetails.artistId}.`);
 				// If no existing album found, create a new one
 				album = new Album({
 					title: parsedAlbumDetails.title,
-					artist: parsedAlbumDetails.artist,
+					artistId: parsedAlbumDetails.artistId, // Use artistId
 					imageUrl,
 					releaseDate: new Date(parsedAlbumDetails.releaseDate),
 					generalGenre: parsedAlbumDetails.generalGenre,
@@ -228,20 +238,28 @@ export const handleUpload = async (req, res, next) => {
 				console.log("Audio file object:", audioFile); // Log the audio file object
 
 				// Construct the song public ID with the desired naming convention
-				const artistName = parsedAlbumDetails.artist;
+				// We might need the artist's name for the folder structure, but the song model uses artistId
+				// Let's fetch the artist name using the artistId from the album
+				const artist = await Artist.findById(parsedAlbumDetails.artistId);
+				const artistName = artist ? artist.name : 'Unknown Artist'; // Fallback if artist not found
+
 				const songTitle = songDetails.title;
 				// Assuming trackNumber is available in songDetails if needed for public ID
 				const newSongPublicId = songDetails.trackNumber ? `${songDetails.trackNumber}) ${songTitle}` : songTitle;
 
+				// Use the album folder structure for songs within an album
+				const songFolder = `laterna/artists/${artistName}/${parsedAlbumDetails.title}`;
 
-				const audioUrl = await uploadToCloudinary(audioFile, albumFolder, newSongPublicId, "video"); // Upload audio with the album folder, public ID, and resourceType "video"
+
+				const audioUrl = await uploadToCloudinary(audioFile, songFolder, newSongPublicId, "video"); // Upload audio with the album folder, public ID, and resourceType "video"
 				console.log(`Processing song:`, songDetails); // Log song details
 				console.log(`Song title: ${songDetails.title}`); // Log song title
 
 
 				const song = new Song({
 					title: songDetails.title, // Use the original song title
-					artist: artistName, // Assuming album artist for all songs in album
+					artist: artistName, // Store artist name in song model for easier access
+					artistId: parsedAlbumDetails.artistId, // Store artistId in song model
 					audioUrl, // audioUrl already includes the public ID from uploadToCloudary
 					imageUrl, // Using album image for songs in album
 					duration: 0, // TODO: Get actual duration
@@ -279,9 +297,17 @@ export const handleUpload = async (req, res, next) => {
 				return res.status(400).json({ message: "No audio file uploaded for single song" });
 			}
 
+			// For single songs, we still need the artistId. The frontend currently sends artist name.
+			// We need to find the artist by name or require artistId from the frontend for single songs too.
+			// For now, let's assume the frontend will be updated to send artistId for single songs as well.
+			// If not, we would need to add logic here to find the artist by name.
+			// Assuming frontend will send artistId for single songs:
+			const artistId = parsedSingleSongDetails.artistId; // Assuming artistId is sent for single songs
+			const artist = await Artist.findById(artistId);
+			const artistName = artist ? artist.name : 'Unknown Artist'; // Fallback if artist not found
+
 
 			// Construct the new image public ID with the desired naming convention for single songs
-			const artistName = parsedSingleSongDetails.artist;
 			const songTitle = parsedSingleSongDetails.title;
 			const newImagePublicId = `${artistName} - ${songTitle}`;
 			const artistFolder = `laterna/artists/${artistName}`;
@@ -296,7 +322,8 @@ export const handleUpload = async (req, res, next) => {
 
 			const song = new Song({
 				title: parsedSingleSongDetails.title, // Use the original song title from singleSongDetails
-				artist: artistName,
+				artist: artistName, // Store artist name
+				artistId: artistId, // Store artistId
 				audioUrl,
 				imageUrl,
 				duration: 0, // TODO: Get actual duration

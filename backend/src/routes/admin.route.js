@@ -1,8 +1,10 @@
 import { Router } from "express";
-import { checkAdmin, createAlbum, createSong, deleteAlbum, deleteSong, handleUpload, createArtist } from "../controller/admin.controller.js"; // Import createArtist
+import { checkAdmin, createAlbum, createSong, deleteAlbum, deleteSong, handleUpload, createArtist, getAllArtists } from "../controller/admin.controller.js"; // Import createArtist and getAllArtists
 import { protectRoute, requireAdmin } from "../middleware/auth.middleware.js";
 
 const router = Router();
+
+router.get("/artists", getAllArtists); // New route to get all artists
 
 router.use(protectRoute, requireAdmin);
 
