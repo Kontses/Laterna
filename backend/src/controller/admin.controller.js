@@ -29,9 +29,11 @@ export const createArtist = async (req, res, next) => {
 
 		let profilePhotoUrl = "";
 		if (profilePhotoFile) {
+			const artistName = name;
+			const folder = `laterna/artist/${artistName}`;
+			const publicId = `${artistName} - profile pic`;
 			// Upload photo to Cloudinary
-			// TODO: Define a specific folder and public ID naming convention for artist photos
-			profilePhotoUrl = await uploadToCloudinary(profilePhotoFile, "laterna/artists/profiles");
+			profilePhotoUrl = await uploadToCloudinary(profilePhotoFile, folder, publicId);
 		}
 
 		const artist = new Artist({
