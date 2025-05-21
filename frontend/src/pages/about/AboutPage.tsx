@@ -13,7 +13,7 @@ const Laterna3DModel = forwardRef<Group>((props, ref) => {
 
   // Removed useFrame as rotation is handled by parent component's useEffect
 
-  return <primitive object={clonedScene} ref={ref} scale={0.5} {...props} />; // Adjust scale as needed
+  return <primitive object={clonedScene} ref={ref} scale={1.7} {...props} />; // Adjust scale as needed
 });
 
 const AboutPage = () => {
@@ -29,7 +29,7 @@ const AboutPage = () => {
           const scrollTop = (scrollAreaElement as HTMLElement).scrollTop;
           // Rotate the model based on the scroll position
           // Adjust the multiplier (0.01) to control the rotation speed relative to scroll
-          modelRef.current.rotation.y = scrollTop * 0.01;
+          modelRef.current.rotation.y = scrollTop * 0.008;
         }
       }
     };
@@ -50,7 +50,7 @@ const AboutPage = () => {
 
   return (
     <ScrollArea className="h-[calc(100vh-180px)]" ref={scrollAreaRef}>
-      <div className="flex flex-col items-center justify-center bg-[#1f0637] p-8" style={{ height: '400px' }}> {/* Added height for visibility */}
+      <div className="flex flex-col items-center justify-center bg-[#1f0637]" style={{ height: '400px' }}> {/* Added height for visibility */}
         {/* 3D Canvas */}
         <Canvas camera={{ position: [0, 0, 5], fov: 50 }}>
           <ambientLight intensity={0.5} />
