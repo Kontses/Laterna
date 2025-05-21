@@ -22,12 +22,29 @@
 
 ## Αρχιτεκτονική
 
-- **Frontend**: React με TypeScript, Vite, Tailwind CSS, Shadcn UI
-- **Backend**: Node.js με Express
+- **Frontend**: React με TypeScript, Vite, Tailwind CSS, Shadcn UI, Three.js
+- **Backend**: Node.js με Express, Node-cron, Express Fileupload
 - **Βάση Δεδομένων**: MongoDB
 - **Authentication**: Clerk
 - **File Storage**: Cloudinary
 - **Real-time επικοινωνία**: Socket.io
+
+## Πρόσθετες Τεχνολογίες
+
+### Frontend
+
+-   **3D Graphics**: Three.js, @react-three/drei, @react-three/fiber
+-   **HTTP Client**: Axios
+-   **Routing**: React Router DOM
+-   **Drag and Drop**: @dnd-kit/core, @dnd-kit/sortable, @dnd-kit/utilities
+-   **Notifications**: React Hot Toast
+-   **Layout**: React Resizable Panels
+-   **Icons**: Lucide React, @radix-ui/react-icons
+-   **UI Utilities**: class-variance-authority, clsx, tailwind-merge, tailwindcss-animate
+
+### Backend
+
+-   **Cryptography**: crypto-js
 
 ## Frontend State Management
 
