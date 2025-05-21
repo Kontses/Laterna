@@ -1,11 +1,67 @@
-import React from 'react';
+import React, { useRef, useEffect, Suspense, forwardRef } from 'react';
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Canvas, useFrame, useThree } from '@react-three/fiber';
+import { useGLTF, OrbitControls, Environment } from '@react-three/drei';
+import { Group } from 'three';
+
+// Component to load and display the 3D model
+const Laterna3DModel = forwardRef<Group>((props, ref) => {
+  const { scene } = useGLTF('/Laterna_3D.glb');
+
+  // Clone the scene to avoid issues if the model is used multiple times
+  const clonedScene = scene.clone();
+
+  // Removed useFrame as rotation is handled by parent component's useEffect
+
+  return <primitive object={clonedScene} ref={ref} scale={0.5} {...props} />; // Adjust scale as needed
+});
 
 const AboutPage = () => {
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const modelRef = useRef<Group>(null); // Ref for the 3D model component, typed as Group
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (scrollAreaRef.current && modelRef.current) {
+        // Find the scrollable element within ScrollArea
+        const scrollAreaElement = scrollAreaRef.current.querySelector('[data-radix-scroll-area-viewport]');
+        if (scrollAreaElement) {
+          const scrollTop = (scrollAreaElement as HTMLElement).scrollTop;
+          // Rotate the model based on the scroll position
+          // Adjust the multiplier (0.01) to control the rotation speed relative to scroll
+          modelRef.current.rotation.y = scrollTop * 0.01;
+        }
+      }
+    };
+
+    const scrollAreaElement = scrollAreaRef.current?.querySelector('[data-radix-scroll-area-viewport]');
+
+    if (scrollAreaElement) {
+      scrollAreaElement.addEventListener('scroll', handleScroll);
+    }
+
+    return () => {
+      if (scrollAreaElement) {
+        scrollAreaElement.removeEventListener('scroll', handleScroll);
+      }
+    };
+  }, []);
+
+
   return (
-    <ScrollArea className="h-[calc(100vh-180px)]">
-      <div className="flex flex-col items-center justify-center bg-[#1f0637] p-8">
-        <img src="/laternalogo-full.png" alt="Laterna Logo" className="size-64 object-contain" />
+    <ScrollArea className="h-[calc(100vh-180px)]" ref={scrollAreaRef}>
+      <div className="flex flex-col items-center justify-center bg-[#1f0637] p-8" style={{ height: '400px' }}> {/* Added height for visibility */}
+        {/* 3D Canvas */}
+        <Canvas camera={{ position: [0, 0, 5], fov: 50 }}>
+          <ambientLight intensity={0.5} />
+          <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} />
+          <pointLight position={[-10, -10, -10]} />
+          <Suspense fallback={null}>
+            <Laterna3DModel ref={modelRef} /> {/* Pass ref to the model component */}
+            <Environment preset="city" /> {/* Add environment lighting */}
+          </Suspense>
+          {/* <OrbitControls enableZoom={false} enablePan={false} enableRotate={false} /> {/* Optional: Add controls for testing */}
+        </Canvas>
       </div>
       <div className="p-8 text-zinc-300">
         <h1 className="text-2xl font-bold mb-4">Λατέρνα</h1>

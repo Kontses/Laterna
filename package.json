@@ -13,7 +13,10 @@
 	"dependencies": {
 		"@dnd-kit/modifiers": "^9.0.0",
 		"@radix-ui/react-label": "^2.1.6",
-		"crypto-js": "^4.2.0"
+		"@react-three/drei": "^10.0.8",
+		"@react-three/fiber": "^9.1.2",
+		"crypto-js": "^4.2.0",
+		"three": "^0.176.0"
 	},
 	"devDependencies": {
 		"@types/crypto-js": "^4.2.2"
