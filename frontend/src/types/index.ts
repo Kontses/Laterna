@@ -14,7 +14,6 @@ export interface Song {
 export interface Album {
 	_id: string;
 	title: string;
-	artist: string;
 	artistId: string;
 	coverUrl: string;
 	imageUrl: string;
@@ -28,7 +27,7 @@ export interface Single {
 	_id: string;
 	title: string;
 	artist: string;
-	coverUrl: string;
+	imageUrl: string; // Changed from coverUrl to imageUrl
 	year: number;
 	type: string; // e.g., "Single"
 }

@@ -122,14 +122,20 @@ export const deleteSong = async (req, res, next) => {
 
 export const createAlbum = async (req, res, next) => {
 	try {
-		const { title, artist, releaseYear, description } = req.body;
+		const { title, artistId, releaseYear, description } = req.body; // Changed 'artist' to 'artistId'
 		const { imageFile } = req.files;
 
-		const imageUrl = await uploadToCloudinary(imageFile);
+		// Fetch artist name using artistId for Cloudinary folder path
+		const artist = await Artist.findById(artistId);
+		const artistName = artist ? artist.name : 'unknown_artist'; // Fallback to a valid folder name
+
+		// Construct Cloudinary folder path
+		const albumFolder = `laterna/artists/${artistName}/${title}`;
+		const imageUrl = await uploadToCloudinary(imageFile, albumFolder); // Pass folder to uploadToCloudinary
 
 		const album = new Album({
 			title,
-			artist,
+			artistId, // Use artistId
 			imageUrl,
 			releaseYear,
 			description,
@@ -180,13 +186,11 @@ export const handleUpload = async (req, res, next) => {
 
 			// Construct the new image public ID with the desired naming convention
 			const uploadDate = new Date().toISOString().split('T')[0]; // Get current date in YYYY-MM-DD format
-			const artistName = parsedAlbumDetails.artist;
+			const artist = await Artist.findById(parsedAlbumDetails.artistId);
+			const artistName = artist ? artist.name : 'unknown_artist'; // Changed fallback to a valid folder name
 			const albumTitle = parsedAlbumDetails.title;
-			const newImagePublicId = `${artistName} - ${albumTitle}`;
-			const albumFolder = `laterna/artists/${artistName}/${albumTitle}`;
-
-
-			const imageUrl = await uploadToCloudinary(imageFile, albumFolder, newImagePublicId); // Upload image with the new public ID and folder
+			const newImagePublicId = `laterna/artists/${artistName}/${albumTitle}/${artistName} - ${albumTitle}`; // Full path as public ID
+			const imageUrl = await uploadToCloudinary(imageFile, null, newImagePublicId); // Pass null for folder
 
 			let album;
 			// Check if an album with the same title and artist already exists
@@ -241,17 +245,12 @@ export const handleUpload = async (req, res, next) => {
 				// We might need the artist's name for the folder structure, but the song model uses artistId
 				// Let's fetch the artist name using the artistId from the album
 				const artist = await Artist.findById(parsedAlbumDetails.artistId);
-				const artistName = artist ? artist.name : 'Unknown Artist'; // Fallback if artist not found
+				const artistName = artist ? artist.name : 'unknown_artist'; // Changed fallback to a valid folder name
 
 				const songTitle = songDetails.title;
 				// Assuming trackNumber is available in songDetails if needed for public ID
-				const newSongPublicId = songDetails.trackNumber ? `${songDetails.trackNumber}) ${songTitle}` : songTitle;
-
-				// Use the album folder structure for songs within an album
-				const songFolder = `laterna/artists/${artistName}/${parsedAlbumDetails.title}`;
-
-
-				const audioUrl = await uploadToCloudinary(audioFile, songFolder, newSongPublicId, "video"); // Upload audio with the album folder, public ID, and resourceType "video"
+				const newSongPublicId = `laterna/artists/${artistName}/${parsedAlbumDetails.title}/${songDetails.trackNumber ? `${songDetails.trackNumber}) ` : ''}${songTitle}`; // Full path as public ID
+				const audioUrl = await uploadToCloudinary(audioFile, null, newSongPublicId, "video"); // Pass null for folder
 				console.log(`Processing song:`, songDetails); // Log song details
 				console.log(`Song title: ${songDetails.title}`); // Log song title
 
@@ -304,21 +303,18 @@ export const handleUpload = async (req, res, next) => {
 			// Assuming frontend will send artistId for single songs:
 			const artistId = parsedSingleSongDetails.artistId; // Assuming artistId is sent for single songs
 			const artist = await Artist.findById(artistId);
-			const artistName = artist ? artist.name : 'Unknown Artist'; // Fallback if artist not found
+			const artistName = artist ? artist.name : 'unknown_artist'; // Changed fallback to a valid folder name
 
 
 			// Construct the new image public ID with the desired naming convention for single songs
 			const songTitle = parsedSingleSongDetails.title;
-			const newImagePublicId = `${artistName} - ${songTitle}`;
-			const artistFolder = `laterna/artists/${artistName}`;
-
-
-			const imageUrl = await uploadToCloudinary(imageFile, artistFolder, newImagePublicId); // Upload image with the new public ID and folder
+			const newImagePublicId = `laterna/artists/${artistName}/${songTitle}`; // Full path as public ID
+			const imageUrl = await uploadToCloudinary(imageFile, null, newImagePublicId); // Pass null for folder
 
 			// Construct the new song public ID with the desired naming convention for single songs
-			const newSongPublicId = `${songTitle}`; // Assuming no track number for single songs
+			const newSongPublicId = `laterna/artists/${artistName}/${songTitle}`; // Full path as public ID
 
-			const audioUrl = await uploadToCloudinary(audioFile, artistFolder, newSongPublicId, "video"); // audioFile is a single file here, upload with artist folder and public ID, and resourceType "video"
+			const audioUrl = await uploadToCloudinary(audioFile, null, newSongPublicId, "video"); // Pass null for folder
 
 			const song = new Song({
 				title: parsedSingleSongDetails.title, // Use the original song title from singleSongDetails

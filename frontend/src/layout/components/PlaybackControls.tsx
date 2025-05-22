@@ -68,9 +68,11 @@ export const PlaybackControls = () => {
 								<div className='font-medium truncate hover:underline cursor-pointer'>
 									{currentSong.title}
 								</div>
-								<Link to={`/artists/${currentSong?.artistId}`} className='text-sm text-zinc-400 truncate hover:underline'>
-									{currentSong.artist}
-								</Link>
+								{currentSong?.artistId && (
+									<Link to={`/artists/${currentSong.artistId}`} className='text-sm text-zinc-400 truncate hover:underline'>
+										{currentSong.artist}
+									</Link>
+								)}
 							</div>
 						</>
 					)}

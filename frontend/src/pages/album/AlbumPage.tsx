@@ -4,8 +4,9 @@ import { useMusicStore } from "@/stores/useMusicStore";
 import { usePlayerStore } from "@/stores/usePlayerStore";
 import { useAlbumDescriptionStore } from "@/stores/useAlbumDescriptionStore"; // Import the store
 import { Clock, Pause, Play, Download } from "lucide-react";
-import { useEffect } from "react"; // Removed useState
+import { useEffect, useState } from "react"; // Added useState
 import { useParams, Link } from "react-router-dom";
+import { axiosInstance } from "@/lib/axios"; // Import axiosInstance
 
 const formatDuration = (seconds: number) => {
 	const minutes = Math.floor(seconds / 60);
@@ -19,6 +20,8 @@ const AlbumPage = () => {
 	const { currentSong, isPlaying, playAlbum, togglePlay } = usePlayerStore();
 	const { setAlbumDescription } = useAlbumDescriptionStore(); // Get setAlbumDescription from the store
 
+	const [artistName, setArtistName] = useState<string | null>(null); // State for artist name
+
 	useEffect(() => {
 		if (albumId) fetchAlbumById(albumId);
 	}, [fetchAlbumById, albumId]);
@@ -27,6 +30,19 @@ const AlbumPage = () => {
 		if (currentAlbum?.description) {
 			setAlbumDescription(currentAlbum.description); // Set description in the store
 		}
+
+		const fetchArtistName = async () => {
+			if (currentAlbum?.artistId) {
+				try {
+					const response = await axiosInstance.get(`/api/artists/${currentAlbum.artistId}`);
+					setArtistName(response.data.name); // Assuming the artist endpoint returns { name: "Artist Name" }
+				} catch (error) {
+					console.error("Error fetching artist name:", error);
+					setArtistName("Unknown Artist");
+				}
+			}
+		};
+		fetchArtistName();
 	}, [currentAlbum, setAlbumDescription]);
 
 
@@ -73,9 +89,11 @@ const AlbumPage = () => {
 								<p className='text-sm font-medium'>Album</p>
 								<h1 className='text-5xl font-bold my-4'>{currentAlbum?.title}</h1>
 								<div className='flex items-center gap-2 text-sm text-zinc-100'>
-									<Link to={`/artists/${currentAlbum?.artistId}`} className='hover:underline'>
-										<span className='font-medium text-white'>{currentAlbum?.artist}</span>
-									</Link>
+									{currentAlbum?.artistId && (
+										<Link to={`/artists/${currentAlbum.artistId}`} className='hover:underline'>
+											<span className='font-medium text-white'>{artistName || "Unknown Artist"}</span>
+										</Link>
+									)}
 									<span>• {currentAlbum?.songs.length} songs</span>
 									<span>• {currentAlbum?.year}</span>
 									<Button
@@ -84,7 +102,7 @@ const AlbumPage = () => {
 										onClick={() => {
 											if (currentAlbum) {
 												const cloudName = 'YOUR_CLOUD_NAME'; // Replace with your Cloudinary cloud name
-												const folderPath = `laterna/artists/${currentAlbum.artist}/${currentAlbum.title}`;
+												const folderPath = `laterna/artists/${artistName || "Unknown Artist"}/${currentAlbum.title}`;
 												const zipUrl = `https://res.cloudinary.com/${cloudName}/image/list/${folderPath}/archive.zip`;
 												window.open(zipUrl, '_blank');
 											}
@@ -159,9 +177,11 @@ const AlbumPage = () => {
 
 													<div>
 														<div className={`font-medium text-white`}>{song.title}</div>
-														<Link to={`/artists/${song?.artistId}`} className='hover:underline'>
-															{song.artist}
-														</Link>
+														{song?.artistId && (
+															<Link to={`/artists/${song.artistId}`} className='hover:underline'>
+																{song.artist}
+															</Link>
+														)}
 													</div>
 												</div>
 												<div className='flex items-center'>{formatDuration(song.duration)}</div>
