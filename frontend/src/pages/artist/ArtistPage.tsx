@@ -120,9 +120,7 @@ const ArtistPage: React.FC = () => {
                 className="w-full h-[300px] object-cover absolute top-0 left-0 z-0"
               />
               <div className="relative z-10 flex flex-col justify-end h-[300px] text-white p-4">
-                {/* Removed "Επαληθευμένος καλλιτέχνης" */}
                 <h1 className="text-5xl font-bold my-4">{artist.name}</h1>
-                {/* Removed monthlyListeners */}
               </div>
             </div>
 
