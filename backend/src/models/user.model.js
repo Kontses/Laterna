@@ -15,6 +15,12 @@ const userSchema = new mongoose.Schema(
 			required: true,
 			unique: true,
 		},
+		recentPlays: [
+			{
+				type: mongoose.Schema.Types.ObjectId,
+				ref: "Song",
+			},
+		],
 	},
 	{ timestamps: true } //  createdAt, updatedAt
 );

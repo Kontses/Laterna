@@ -1,7 +1,7 @@
 import { axiosInstance } from "@/lib/axios";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { useChatStore } from "@/stores/useChatStore";
-import { useAuth } from "@clerk/clerk-react";
+import { useAuth, useUser } from "@clerk/clerk-react"; // Import useUser
 import { Loader } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -12,6 +12,7 @@ const updateApiToken = (token: string | null) => {
 
 const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 	const { getToken, userId } = useAuth();
+	const { user } = useUser(); // Get user object from Clerk
 	const [loading, setLoading] = useState(true);
 	const { checkAdminStatus } = useAuthStore();
 	const { initSocket, disconnectSocket } = useChatStore();
@@ -22,6 +23,15 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 				const token = await getToken();
 				updateApiToken(token);
 				if (token) {
+					// Call backend to create/update user in DB
+					if (user) {
+						await axiosInstance.post("/api/auth/callback", {
+							id: user.id,
+							firstName: user.firstName,
+							lastName: user.lastName,
+							imageUrl: user.imageUrl,
+						});
+					}
 					await checkAdminStatus();
 					// init socket
 					if (userId) initSocket(userId);
@@ -38,7 +48,7 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
 		// clean up
 		return () => disconnectSocket();
-	}, [getToken, userId, checkAdminStatus, initSocket, disconnectSocket]);
+	}, [getToken, userId, checkAdminStatus, initSocket, disconnectSocket, user]); // Add user to dependencies
 
 	if (loading)
 		return (

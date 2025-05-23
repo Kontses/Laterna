@@ -5,6 +5,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import SectionGrid from "./components/SectionGrid";
 import { usePlayerStore } from "@/stores/usePlayerStore";
 import { useUser } from "@clerk/clerk-react";
+import { useRecentPlaysStore } from "@/stores/useRecentPlaysStore";
+import RecentPlaysGrid from "./components/RecentPlaysGrid"; // Import RecentPlaysGrid
 
 const HomePage = () => {
 	const {
@@ -21,6 +23,8 @@ const HomePage = () => {
 	const { user } = useUser();
 	const [greeting, setGreeting] = useState("");
 	const [greetingEmoji, setGreetingEmoji] = useState<string>("");
+
+	const { recentPlays, fetchRecentPlays, isLoading: isRecentPlaysLoading } = useRecentPlaysStore();
 
 	useEffect(() => {
 		const getGreeting = () => {
@@ -40,6 +44,10 @@ const HomePage = () => {
 	}, []);
 
 	useEffect(() => {
+		fetchRecentPlays();
+	}, [fetchRecentPlays]);
+
+	useEffect(() => {
 		if (madeForYouSongs.length > 0 && featuredSongs.length > 0 && trendingSongs.length > 0) {
 			const allSongs = [...featuredSongs, ...madeForYouSongs, ...trendingSongs];
 			initializeQueue(allSongs);
@@ -54,6 +62,10 @@ const HomePage = () => {
 						{greeting}
 						{user?.username ? ` ${user.username}!` : "!"} {greetingEmoji}
 					</h1>
+					{/* Display Recent Plays Grid */}
+					<div className="mb-8">
+						<RecentPlaysGrid songs={recentPlays} isLoading={isRecentPlaysLoading} />
+					</div>
 					<FeaturedSection />
 
 					<div className='space-y-8'>

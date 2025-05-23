@@ -41,6 +41,10 @@ export const usePlayerStore = create<PlayerStore>((set, get) => ({
 				userId: socket.auth.userId,
 				activity: `Playing ${song.title} by ${song.artist}`,
 			});
+			socket.emit("add_to_recent_plays", {
+				userId: socket.auth.userId,
+				songId: song._id,
+			});
 		}
 		set({
 			queue: songs,
@@ -58,6 +62,10 @@ export const usePlayerStore = create<PlayerStore>((set, get) => ({
 			socket.emit("update_activity", {
 				userId: socket.auth.userId,
 				activity: `Playing ${song.title} by ${song.artist}`,
+			});
+			socket.emit("add_to_recent_plays", {
+				userId: socket.auth.userId,
+				songId: song._id,
 			});
 		}
 
@@ -80,6 +88,12 @@ export const usePlayerStore = create<PlayerStore>((set, get) => ({
 				activity:
 					willStartPlaying && currentSong ? `Playing ${currentSong.title} by ${currentSong.artist}` : "Idle",
 			});
+			if (willStartPlaying && currentSong) {
+				socket.emit("add_to_recent_plays", {
+					userId: socket.auth.userId,
+					songId: currentSong._id,
+				});
+			}
 		}
 
 		set({
@@ -100,6 +114,10 @@ export const usePlayerStore = create<PlayerStore>((set, get) => ({
 				socket.emit("update_activity", {
 					userId: socket.auth.userId,
 					activity: `Playing ${nextSong.title} by ${nextSong.artist}`,
+				});
+				socket.emit("add_to_recent_plays", {
+					userId: socket.auth.userId,
+					songId: nextSong._id,
 				});
 			}
 
@@ -134,6 +152,10 @@ export const usePlayerStore = create<PlayerStore>((set, get) => ({
 				socket.emit("update_activity", {
 					userId: socket.auth.userId,
 					activity: `Playing ${prevSong.title} by ${prevSong.artist}`,
+				});
+				socket.emit("add_to_recent_plays", {
+					userId: socket.auth.userId,
+					songId: prevSong._id,
 				});
 			}
 

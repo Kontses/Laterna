@@ -1,5 +1,6 @@
 import { Server } from "socket.io";
 import { Message } from "../models/message.model.js";
+import { User } from "../models/user.model.js"; // Import User model
 
 export const initializeSocket = (server) => {
 	const io = new Server(server, {
@@ -29,6 +30,25 @@ export const initializeSocket = (server) => {
 			console.log("activity updated", userId, activity);
 			userActivities.set(userId, activity);
 			io.emit("activity_updated", { userId, activity });
+		});
+
+		socket.on("add_to_recent_plays", async ({ userId, songId }) => {
+			try {
+				const user = await User.findOne({ clerkId: userId });
+				if (user) {
+					// Remove if already exists to move to front
+					user.recentPlays = user.recentPlays.filter(
+						(play) => play.toString() !== songId
+					);
+					// Add to the beginning
+					user.recentPlays.unshift(songId);
+					// Keep only the last 10
+					user.recentPlays = user.recentPlays.slice(0, 10);
+					await user.save();
+				}
+			} catch (error) {
+				console.error("Error adding to recent plays:", error);
+			}
 		});
 
 		socket.on("send_message", async (data) => {
