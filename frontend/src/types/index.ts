@@ -27,7 +27,10 @@ export interface Single {
 	_id: string;
 	title: string;
 	artist: string;
+	artistId: string; // Added for compatibility with Song
+	albumId: string | null; // Added for compatibility with Song
 	imageUrl: string; // Changed from coverUrl to imageUrl
+	audioUrl: string; // Added for compatibility with Song
 	year: number;
 	type: string; // e.g., "Single"
 }

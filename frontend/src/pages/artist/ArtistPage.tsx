@@ -8,6 +8,8 @@ import { Play, Pause, Download, ChevronLeft, ChevronRight } from "lucide-react";
 import { Link } from "react-router-dom"; // Import Link
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"; // Import Dialog components and DialogTitle
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden"; // Import VisuallyHidden
+import PlayButton from "@/pages/home/components/PlayButton"; // Import PlayButton
+import { usePlayerStore } from "@/stores/usePlayerStore"; // Import usePlayerStore
 
 const ArtistPage: React.FC = () => {
   const { artistId } = useParams<{ artistId: string }>();
@@ -134,8 +136,9 @@ const ArtistPage: React.FC = () => {
                 <Play className='h-7 w-7 text-black' />
               </Button>
               <Button
-                variant="outline"
-                className="rounded-full border-white text-white hover:bg-white/10"
+                variant="ghost"
+                className="rounded-full border border-white text-white bg-transparent hover:bg-white/10
+                  hover:scale-105 transition-all w-28 flex-shrink-0"
                 onClick={handleFollowToggle}
               >
                 {isFollowing ? "Following" : "Follow"}
@@ -153,9 +156,19 @@ const ArtistPage: React.FC = () => {
                     <h2 className="text-2xl font-semibold mb-4">Albums</h2>
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
                       {artist.albums.map((album) => (
-                        <Link to={`/albums/${album._id}`} key={album._id} className="flex flex-col items-center">
-                          {/* Album Cover */}
-                          <img src={album.imageUrl} alt={album.title} className="w-full h-auto rounded-md mb-2" />
+                        <Link to={`/albums/${album._id}`} key={album._id} className="flex flex-col items-center group">
+                          <div className="relative w-full">
+                            {/* Album Cover */}
+                            <img
+                              src={album.imageUrl}
+                              alt={album.title}
+                              className="w-full h-auto rounded-md mb-2 transition-all duration-300 group-hover:scale-105"
+                            />
+                            {/* Play Button */}
+                            {album.songs && album.songs.length > 0 && (
+                              <PlayButton song={album.songs[0]} />
+                            )}
+                          </div>
                           {/* Album Title */}
                           <p className="text-sm font-medium">{album.title}</p>
                           {/* Album Year and Type */}
@@ -172,14 +185,22 @@ const ArtistPage: React.FC = () => {
                     <h2 className="text-2xl font-semibold mb-4">Singles</h2>
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
                       {artist.singles.map((single) => (
-                        <div key={single._id} className="flex flex-col items-center">
-                          {/* Single Cover */}
-                          <img src={single.imageUrl} alt={single.title} className="w-full h-auto rounded-md mb-2" />
+                        <Link to={`/singles/${single._id}`} key={single._id} className="flex flex-col items-center group">
+                          <div className="relative w-full">
+                            {/* Single Cover */}
+                            <img
+                              src={single.imageUrl}
+                              alt={single.title}
+                              className="w-full h-auto rounded-md mb-2 transition-all duration-300 group-hover:scale-105"
+                            />
+                            {/* Play Button */}
+                            <PlayButton song={single as any} /> {/* Cast to any for now, assuming Single can be treated as Song */}
+                          </div>
                           {/* Single Title */}
                           <p className="text-sm font-medium">{single.title}</p>
                           {/* Single Year and Type */}
                           <p className="text-xs text-gray-500">{single.year} &bull; {single.type}</p>
-                        </div>
+                        </Link>
                       ))}
                     </div>
                   </section>
