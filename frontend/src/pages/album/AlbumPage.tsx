@@ -4,9 +4,10 @@ import { useMusicStore } from "@/stores/useMusicStore";
 import { usePlayerStore } from "@/stores/usePlayerStore";
 import { useAlbumDescriptionStore } from "@/stores/useAlbumDescriptionStore"; // Import the store
 import { Clock, Pause, Play, Download } from "lucide-react";
-import { useEffect, useState } from "react"; // Added useState
+import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { axiosInstance } from "@/lib/axios"; // Import axiosInstance
+import { axiosInstance } from "@/lib/axios";
+import { FastAverageColor } from 'fast-average-color'; // Added import
 
 const formatDuration = (seconds: number) => {
 	const minutes = Math.floor(seconds / 60);
@@ -20,7 +21,8 @@ const AlbumPage = () => {
 	const { currentSong, isPlaying, playAlbum, togglePlay } = usePlayerStore();
 	const { setAlbumDescription } = useAlbumDescriptionStore(); // Get setAlbumDescription from the store
 
-	const [artistName, setArtistName] = useState<string | null>(null); // State for artist name
+	const [artistName, setArtistName] = useState<string | null>(null);
+	const [gradientColor, setGradientColor] = useState<string>("#5038a0"); // Default static color - Reverted to state
 
 	useEffect(() => {
 		if (albumId) fetchAlbumById(albumId);
@@ -28,21 +30,32 @@ const AlbumPage = () => {
 
 	useEffect(() => {
 		if (currentAlbum?.description) {
-			setAlbumDescription(currentAlbum.description); // Set description in the store
+			setAlbumDescription(currentAlbum.description);
 		}
 
-		const fetchArtistName = async () => {
+		const fetchArtistNameAndExtractColor = async () => { // Renamed function back
 			if (currentAlbum?.artistId) {
 				try {
 					const response = await axiosInstance.get(`/api/artists/${currentAlbum.artistId}`);
-					setArtistName(response.data.name); // Assuming the artist endpoint returns { name: "Artist Name" }
+					setArtistName(response.data.name);
 				} catch (error) {
 					console.error("Error fetching artist name:", error);
 					setArtistName("Unknown Artist");
 				}
 			}
+
+			if (currentAlbum?.imageUrl) {
+				const fac = new FastAverageColor();
+				try {
+					const color = await fac.getColorAsync(currentAlbum.imageUrl);
+					setGradientColor(color.rgba);
+				} catch (error) {
+					console.error("Error extracting color:", error);
+					setGradientColor("#5038a0"); // Fallback on error
+				}
+			}
 		};
-		fetchArtistName();
+		fetchArtistNameAndExtractColor(); // Call the renamed function
 	}, [currentAlbum, setAlbumDescription]);
 
 
@@ -69,11 +82,12 @@ const AlbumPage = () => {
 		<div className='h-full'>
 			<ScrollArea className='h-full rounded-md'>
 				{/* Main Content */}
-				<div className='relative min-h-full'>
+				<div className='relative'> {/* Removed min-h-full */}
 					{/* bg gradient */}
 					<div
-						className='absolute inset-0 bg-gradient-to-b from-[#5038a0]/80 via-zinc-900/80
+						className='absolute inset-0 bg-gradient-to-b via-zinc-900/80
 					 to-zinc-900 pointer-events-none'
+						style={{ backgroundColor: gradientColor, backgroundImage: `linear-gradient(to bottom, ${gradientColor}, rgb(24,24,27) 70%)` }}
 						aria-hidden='true'
 					/>
 

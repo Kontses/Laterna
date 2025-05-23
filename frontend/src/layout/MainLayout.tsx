@@ -36,7 +36,7 @@ const MainLayout = () => {
 				<ResizableHandle className='w-2 bg-black rounded-lg transition-colors' />
 
 				{/* Main content */}
-				<ResizablePanel defaultSize={isMobile ? 80 : 60}>
+				<ResizablePanel defaultSize={isMobile ? 80 : 60} className="overflow-y-auto">
 					<Outlet /> {/* Removed context prop */}
 				</ResizablePanel>
 

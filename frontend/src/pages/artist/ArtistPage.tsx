@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Artist, Album, Single } from '../../types';
-import { axiosInstance } from '@/lib/axios'; // Assuming axiosInstance is used for API calls
+import { axiosInstance } from '@/lib/axios';
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { FastAverageColor } from 'fast-average-color';
 import { Button } from "@/components/ui/button"; // Import Button
 import { Play, Pause, Download, ChevronLeft, ChevronRight } from "lucide-react"; // Import icons
 import { Link } from "react-router-dom"; // Import Link
@@ -16,12 +17,13 @@ const ArtistPage: React.FC = () => {
   const [artist, setArtist] = useState<Artist | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isFollowing, setIsFollowing] = useState(false); // State for follow button
+  const [isFollowing, setIsFollowing] = useState(false);
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [gradientColor, setGradientColor] = useState<string>("#5038a0"); // Default static color
 
   useEffect(() => {
-    const fetchArtistData = async () => {
+    const fetchArtistDataAndExtractColor = async () => { // Renamed function back
       if (!artistId) {
         setError("Artist ID is missing.");
         setIsLoading(false);
@@ -33,16 +35,23 @@ const ArtistPage: React.FC = () => {
         const response = await axiosInstance.get(`/api/artists/${artistId}`);
         setArtist(response.data);
         setError(null);
+
+        if (response.data?.profilePhotoUrl) {
+          const fac = new FastAverageColor();
+          const color = await fac.getColorAsync(response.data.profilePhotoUrl);
+          setGradientColor(color.rgba);
+        }
       } catch (err) {
-        console.error("Error fetching artist data:", err);
+        console.error("Error fetching artist data or extracting color:", err);
         setError("Failed to fetch artist data.");
         setArtist(null);
+        setGradientColor("#5038a0"); // Fallback on error
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchArtistData();
+    fetchArtistDataAndExtractColor(); // Call the renamed function
   }, [artistId]);
 
   const handleFollowToggle = () => {
@@ -104,11 +113,12 @@ const ArtistPage: React.FC = () => {
   return (
     <div className='h-full'>
       <ScrollArea className='h-full rounded-md'> {/* ScrollArea wraps the entire content */}
-        <div className='relative min-h-full'>
+        <div className='relative'> {/* Removed min-h-full */}
           {/* bg gradient */}
           <div
-            className='absolute inset-0 bg-gradient-to-b from-[#5038a0]/80 via-zinc-900/80
+            className='absolute inset-0 bg-gradient-to-b via-zinc-900/80
              to-zinc-900 pointer-events-none'
+            style={{ backgroundColor: gradientColor, backgroundImage: `linear-gradient(to bottom, ${gradientColor}, rgb(24,24,27) 70%)` }}
             aria-hidden='true'
           />
 
@@ -148,8 +158,9 @@ const ArtistPage: React.FC = () => {
               </Button>
             </div>
 
-            <div className="bg-black/20 backdrop-blur-sm"> {/* Moved background to this div */}
+            <div>
               <div className="container mx-auto p-4">
+            <div>
                 {/* Albums Section */}
                 {artist.albums && artist.albums.length > 0 && (
                   <section className="mb-8">
@@ -225,6 +236,7 @@ const ArtistPage: React.FC = () => {
                     </div>
                   </section>
                 )}
+                </div> {/* NEW WRAPPER DIV ENDS HERE */}
               </div>
             </div>
           </div>
