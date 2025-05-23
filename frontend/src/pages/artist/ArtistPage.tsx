@@ -4,8 +4,10 @@ import { Artist, Album, Single } from '../../types';
 import { axiosInstance } from '@/lib/axios'; // Assuming axiosInstance is used for API calls
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button"; // Import Button
-import { Play, Pause } from "lucide-react"; // Import icons
+import { Play, Pause, Download, ChevronLeft, ChevronRight } from "lucide-react"; // Import icons
 import { Link } from "react-router-dom"; // Import Link
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"; // Import Dialog components and DialogTitle
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden"; // Import VisuallyHidden
 
 const ArtistPage: React.FC = () => {
   const { artistId } = useParams<{ artistId: string }>();
@@ -13,6 +15,8 @@ const ArtistPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isFollowing, setIsFollowing] = useState(false); // State for follow button
+  const [isGalleryOpen, setIsGalleryOpen] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   useEffect(() => {
     const fetchArtistData = async () => {
@@ -44,6 +48,43 @@ const ArtistPage: React.FC = () => {
     // TODO: Implement actual follow/unfollow API call
   };
 
+  const openGallery = (index: number) => {
+    setCurrentImageIndex(index);
+    setIsGalleryOpen(true);
+  };
+
+  const closeGallery = () => {
+    setIsGalleryOpen(false);
+  };
+
+  const goToNextImage = () => {
+    if (artist && artist.galleryImages) {
+      setCurrentImageIndex((prevIndex) => (prevIndex + 1) % artist.galleryImages!.length);
+    }
+  };
+
+  const goToPreviousImage = () => {
+    if (artist && artist.galleryImages) {
+      setCurrentImageIndex((prevIndex) =>
+        (prevIndex - 1 + artist.galleryImages!.length) % artist.galleryImages!.length
+      );
+    }
+  };
+
+  const downloadImage = () => {
+    if (artist && artist.galleryImages && artist.galleryImages[currentImageIndex]) {
+      const imageUrl = artist.galleryImages[currentImageIndex];
+      console.log("Attempting to download image:", imageUrl); // Added console.log
+      const link = document.createElement('a');
+      link.href = imageUrl;
+      link.setAttribute('download', `artist_image_${currentImageIndex + 1}.jpg`);
+      link.setAttribute('target', '_blank'); // Added target="_blank"
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  };
+
   if (isLoading) {
     return <div className="container mx-auto p-4">Loading artist data...</div>;
   }
@@ -55,6 +96,8 @@ const ArtistPage: React.FC = () => {
   if (!artist) {
     return <div className="container mx-auto p-4">Artist not found.</div>;
   }
+
+  const allGalleryImages = [artist.profilePhotoUrl, ...(artist.galleryImages || [])];
 
   return (
     <div className='h-full'>
@@ -144,16 +187,59 @@ const ArtistPage: React.FC = () => {
                   </section>
                 )}
 
-                {/* About Section */}
-                <section>
+                {/* About Section - Reverted to simple text, but kept white color */}
+                <section className="mb-8">
                   <h2 className="text-2xl font-semibold mb-4">About</h2>
-                  <p className="text-gray-700" dangerouslySetInnerHTML={{ __html: artist.about.replace(/\n/g, '<br />') }}></p>
+                  <p className="text-white" dangerouslySetInnerHTML={{ __html: artist.about.replace(/\n/g, '<br />') }}></p>
                 </section>
+
+                {/* Gallery Section */}
+                {allGalleryImages.length > 0 && (
+                  <section className="mb-8">
+                    <h2 className="text-2xl font-semibold mb-4">Gallery</h2>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                      {allGalleryImages.map((imageUrl, index) => (
+                        <div key={index} className="cursor-pointer" onClick={() => openGallery(index)}>
+                          <img src={imageUrl} alt={`Gallery image ${index + 1}`} className="w-full h-auto rounded-md object-cover" />
+                        </div>
+                      ))}
+                    </div>
+                  </section>
+                )}
               </div>
             </div>
           </div>
         </div>
       </ScrollArea>
+
+      {/* Image Gallery Dialog */}
+      <Dialog open={isGalleryOpen} onOpenChange={setIsGalleryOpen}>
+        <DialogContent className="max-w-4xl bg-zinc-900 border-zinc-700 p-6 flex flex-col items-center">
+          <VisuallyHidden asChild>
+            <DialogTitle>Image Gallery</DialogTitle>
+          </VisuallyHidden>
+          {allGalleryImages.length > 0 && (
+            <>
+              <img
+                src={allGalleryImages[currentImageIndex]}
+                alt={`Gallery image ${currentImageIndex + 1}`}
+                className="max-w-full max-h-[80vh] object-contain mb-4"
+              />
+              <div className="flex items-center gap-4">
+                <Button onClick={goToPreviousImage} variant="ghost" size="icon" className="text-white hover:bg-white/10">
+                  <ChevronLeft className="h-6 w-6" />
+                </Button>
+                <Button onClick={downloadImage} variant="ghost" size="icon" className="text-white hover:bg-white/10">
+                  <Download className="h-6 w-6" />
+                </Button>
+                <Button onClick={goToNextImage} variant="ghost" size="icon" className="text-white hover:bg-white/10">
+                  <ChevronRight className="h-6 w-6" />
+                </Button>
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

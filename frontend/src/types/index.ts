@@ -62,4 +62,5 @@ export interface Artist {
 	singles: Single[];
 	about: string;
 	profilePhotoUrl: string;
+	galleryImages?: string[]; // Added for gallery
 }
