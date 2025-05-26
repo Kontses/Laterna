@@ -11,13 +11,14 @@ const AdminPage = () => {
 	const { isAdmin, isLoading } = useAuthStore();
 	const [showAddArtistForm, setShowAddArtistForm] = useState(false); // State to control form visibility
 
-	const { fetchAlbums, fetchSongs, fetchStats } = useMusicStore();
+	const { fetchAlbums, fetchSongs, fetchStats, fetchArtists } = useMusicStore(); // Destructure fetchArtists
 
 	useEffect(() => {
 		fetchAlbums();
 		fetchSongs();
 		fetchStats();
-	}, [fetchAlbums, fetchSongs, fetchStats]);
+		fetchArtists(); // Fetch artists on component mount
+	}, [fetchAlbums, fetchSongs, fetchStats, fetchArtists]);
 
 	if (!isAdmin && !isLoading) return <div>Unauthorized</div>;
 
@@ -34,15 +35,17 @@ const AdminPage = () => {
 			<h3 className="text-lg font-semibold text-white mb-4">1. Create a new Artist profile that doesn't exist</h3>
 			<div className="mb-4">
 				{!showAddArtistForm && (
-					<Button variant="outline" onClick={() => setShowAddArtistForm(true)}>
+					<Button
+						className="bg-purple-600 text-white hover:bg-purple-700"
+						onClick={() => setShowAddArtistForm(true)}
+					>
 						Add New Artist
 					</Button>
 				)}
 				{showAddArtistForm && (
 					<AddArtistForm
 						onArtistAdded={() => {
-							// TODO: Refresh artist list after adding a new artist
-							console.log("Artist added, refresh list if needed.");
+							fetchArtists(); // Refresh artist list after adding a new artist
 							setShowAddArtistForm(false); // Hide form after adding
 						}}
 						onCancel={() => setShowAddArtistForm(false)} // Hide form on cancel

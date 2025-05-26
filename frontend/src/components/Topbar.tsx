@@ -1,4 +1,4 @@
-import { SignedOut, UserButton, SignInButton } from "@clerk/clerk-react";
+import { UserButton, SignInButton, useAuth } from "@clerk/clerk-react";
 import { LayoutDashboardIcon, Search } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
@@ -10,6 +10,7 @@ import { buttonVariants } from "./ui/button";
 const Topbar = () => {
 	const [searchTerm, setSearchTerm] = useState('');
 	const { isAdmin } = useAuthStore();
+	const { isSignedIn } = useAuth(); // Add this line
 	console.log({ isAdmin });
 
 	useEffect(() => {
@@ -47,9 +48,10 @@ const Topbar = () => {
 					</Link>
 				)}
 
-				<SignedOut>
-					<SignInButton mode="modal" />
-				</SignedOut>
+				{
+					// Conditionally render SignInButton if user is signed out
+					!isSignedIn && <SignInButton mode="modal" />
+				}
 
 				<UserButton />
 			</div>

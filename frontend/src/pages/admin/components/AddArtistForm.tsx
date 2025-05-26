@@ -128,7 +128,7 @@ const AddArtistForm: React.FC<AddArtistFormProps> = ({ onArtistAdded, onCancel }
           <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>
             Cancel
           </Button>
-          <Button type="submit" className="bg-green-500 hover:bg-green-600 text-black" disabled={isLoading}>
+          <Button type="submit" className="bg-purple-500 hover:bg-purple-600 text-white" disabled={isLoading}>
             {isLoading ? 'Creating...' : 'Create Artist'}
           </Button>
         </div>
