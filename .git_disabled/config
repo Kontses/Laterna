@@ -1,0 +1,18 @@
+[core]
+	repositoryformatversion = 0
+	filemode = false
+	bare = false
+	logallrefupdates = true
+	symlinks = false
+	ignorecase = true
+[user]
+	name = kontses
+	email = libys97@gmail.com
+[remote "origin"]
+	url = https://github.com/Kontses/Laterna.git
+	fetch = +refs/heads/*:refs/remotes/origin/*
+[branch "main"]
+	vscode-merge-base = origin/master
+	vscode-merge-base = origin/master
+	remote = origin
+	merge = refs/heads/main

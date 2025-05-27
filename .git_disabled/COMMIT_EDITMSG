@@ -1,0 +1,10 @@
+chore: update @types/react and @types/react-dom to version 19.1.5
+
+- Updated @types/react from 19.1.4 to 19.1.5
+- Updated @types/react-dom to 19.1.5
+- Added InputEvent interface to global.d.ts and index.d.ts
+- Updated event handler types to include InputEventHandler
+- Modified onBeforeInput event handler type to use InputEventHandler
+- Updated README.md and LICENSE files for @types/react-dom
+- Added canary, client, experimental, server, and static type definitions for @types/react-dom
+- Added test-utils for @types/react-dom

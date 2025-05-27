@@ -1,0 +1,27 @@
+{
+	"name": "spotify-clone",
+	"version": "1.0.0",
+	"description": "",
+	"main": "index.js",
+	"scripts": {
+		"build": "npm install --prefix backend && npm install --prefix frontend && npm run build --prefix frontend",
+		"start": "npm start --prefix backend"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"dependencies": {
+		"@dnd-kit/modifiers": "^9.0.0",
+		"@radix-ui/react-label": "^2.1.6",
+		"@react-three/drei": "^10.0.8",
+		"@react-three/fiber": "^9.1.2",
+		"@types/react": "^19.1.5",
+		"@types/react-dom": "^19.1.5",
+		"color-thief-browser": "^2.0.2",
+		"crypto-js": "^4.2.0",
+		"three": "^0.176.0"
+	},
+	"devDependencies": {
+		"@types/crypto-js": "^4.2.2"
+	}
+}
