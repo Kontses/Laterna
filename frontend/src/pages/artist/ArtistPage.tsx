@@ -33,13 +33,13 @@ const ArtistPage: React.FC = () => {
       try {
         setIsLoading(true);
         const response = await axiosInstance.get(`/api/artists/${artistId}`);
-        setArtist(response.data.artist);
+        setArtist(response.data);
         setIsFollowing(response.data.isFollowing); // Set initial follow status
         setError(null);
 
-        if (response.data.artist?.profilePhotoUrl) {
+        if (response.data?.profilePhotoUrl) {
           const fac = new FastAverageColor();
-          const color = await fac.getColorAsync(response.data.artist.profilePhotoUrl);
+          const color = await fac.getColorAsync(response.data.profilePhotoUrl);
           setGradientColor(color.rgba);
         }
       } catch (err) {
@@ -152,7 +152,7 @@ const ArtistPage: React.FC = () => {
             <div className='px-6 pb-4 flex items-center gap-6'>
               <Button
                 size='icon'
-                className='w-14 h-14 rounded-full bg-green-500 hover:bg-green-400
+                className='w-14 h-14 rounded-full bg-purple-500 hover:bg-purple-400
                   hover:scale-105 transition-all'
               >
                 <Play className='h-7 w-7 text-black' />
