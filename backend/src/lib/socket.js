@@ -34,18 +34,27 @@ export const initializeSocket = (server) => {
 
 		socket.on("add_to_recent_plays", async ({ userId, songId }) => {
 			try {
-				const user = await User.findOne({ clerkId: userId });
-				if (user) {
-					// Remove if already exists to move to front
-					user.recentPlays = user.recentPlays.filter(
-						(play) => play.toString() !== songId
-					);
-					// Add to the beginning
-					user.recentPlays.unshift(songId);
-					// Keep only the last 10
+				// 1. Remove the song if it already exists in the array
+				await User.findOneAndUpdate(
+					{ clerkId: userId },
+					{ $pull: { recentPlays: songId } },
+					{ new: true }
+				);
+
+				// 2. Add the song to the beginning of the array and limit the size
+				const user = await User.findOneAndUpdate(
+					{ clerkId: userId },
+					{ $push: { recentPlays: { $each: [songId], $position: 0 } } },
+					{ new: true }
+				);
+
+				// Although $slice can be used with $push, applying it here separately
+				// ensures we limit after adding, and keeps the $push simple.
+				if (user && user.recentPlays.length > 10) {
 					user.recentPlays = user.recentPlays.slice(0, 10);
 					await user.save();
 				}
+
 			} catch (error) {
 				console.error("Error adding to recent plays:", error);
 			}
