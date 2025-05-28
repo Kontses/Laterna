@@ -11,7 +11,7 @@ const labelVariants = cva(
 interface LabelProps extends React.ComponentPropsWithoutRef<typeof LabelPrimitive.Root>,
   VariantProps<typeof labelVariants>, React.LabelHTMLAttributes<HTMLLabelElement> {
     className?: string;
-    children?: React.ReactNode | any;
+    children?: React.ReactNode;
   }
 
 const Label = React.forwardRef<
