@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Artist, Single } from '../../types';
+import { Artist } from '../../types';
 import { axiosInstance } from '@/lib/axios';
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { FastAverageColor } from 'fast-average-color';
@@ -192,33 +192,6 @@ const ArtistPage: React.FC = () => {
                           <p className="text-sm font-medium">{album.title}</p>
                           {/* Album Year and Type */}
                           <p className="text-xs text-gray-500">{album.releaseDate} &bull; {album.type}</p>
-                        </Link>
-                      ))}
-                    </div>
-                  </section>
-                )}
-
-                {/* Singles Section */}
-                {artist.singles && artist.singles.length > 0 && (
-                  <section className="mb-8">
-                    <h2 className="text-2xl font-semibold mb-4">Singles</h2>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                      {artist.singles.map((single) => (
-                        <Link to={`/singles/${single._id}`} key={single._id} className="flex flex-col items-center group">
-                          <div className="relative w-full">
-                            {/* Single Cover */}
-                            <img
-                              src={single.imageUrl}
-                              alt={single.title}
-                              className="w-full h-auto rounded-md mb-2 transition-all duration-300 group-hover:scale-105"
-                            />
-                            {/* Play Button */}
-                            <PlayButton song={single as any} /> {/* Cast to any for now, assuming Single can be treated as Song */}
-                          </div>
-                          {/* Single Title */}
-                          <p className="text-sm font-medium">{single.title}</p>
-                          {/* Single Year and Type */}
-                          <p className="text-xs text-gray-500">{single.year} &bull; {single.type}</p>
                         </Link>
                       ))}
                     </div>
