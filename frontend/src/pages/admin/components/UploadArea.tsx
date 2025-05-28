@@ -65,6 +65,7 @@ const UploadArea = () => {
   const [singleSongDetails, setSingleSongDetails] = useState({
     title: "",
     artistId: "", // Change to artistId for single songs as well
+    year: "", // Προσθήκη πεδίου year για singles
     // Add other single song fields as needed (e.g., genre, tags, description)
   });
 
@@ -194,7 +195,7 @@ const UploadArea = () => {
       // Clear form
       setAudioFiles([]);
       setImageFile(null);
-      setSingleSongDetails({ title: "", artistId: "" }); // Clear artistId instead of artist
+      setSingleSongDetails({ title: "", artistId: "", year: "" }); // Καθαρισμός year
       setAlbumDetails({ title: "", artistId: "", releaseDate: "", generalGenre: "", specificGenres: "" as string, description: "" }); // Clear specificGenres as raw string and add description
       setAlbumSongsDetails([]);
        if (fileInputRef.current) fileInputRef.current.value = "";
@@ -353,6 +354,16 @@ const UploadArea = () => {
                       ))}
                     </SelectContent>
                   </Select>
+                </div>
+                <div className='space-y-2'>
+                  <label className='text-sm font-medium'>Year</label>
+                  <Input
+                    type='number'
+                    value={singleSongDetails.year}
+                    onChange={(e) => setSingleSongDetails({ ...singleSongDetails, year: e.target.value })}
+                    className='bg-zinc-800 border-zinc-700'
+                    placeholder='Enter year'
+                  />
                 </div>
                 {/* Add other single song fields here */}
             </div>

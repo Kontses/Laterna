@@ -1,16 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Artist, Album, Single } from '../../types';
+import { Artist, Single } from '../../types';
 import { axiosInstance } from '@/lib/axios';
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { FastAverageColor } from 'fast-average-color';
 import { Button } from "@/components/ui/button"; // Import Button
-import { Play, Pause, Download, ChevronLeft, ChevronRight } from "lucide-react"; // Import icons
+import { Play, Download, ChevronLeft, ChevronRight } from "lucide-react"; // Import icons
 import { Link } from "react-router-dom"; // Import Link
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"; // Import Dialog components and DialogTitle
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden"; // Import VisuallyHidden
 import PlayButton from "@/pages/home/components/PlayButton"; // Import PlayButton
-import { usePlayerStore } from "@/stores/usePlayerStore"; // Import usePlayerStore
 
 const ArtistPage: React.FC = () => {
   const { artistId } = useParams<{ artistId: string }>();
@@ -21,6 +20,8 @@ const ArtistPage: React.FC = () => {
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [gradientColor, setGradientColor] = useState<string>("#5038a0"); // Default static color
+
+  const fac = new FastAverageColor();
 
   useEffect(() => {
     const fetchArtistDataAndExtractColor = async () => {
@@ -38,7 +39,6 @@ const ArtistPage: React.FC = () => {
         setError(null);
 
         if (response.data?.profilePhotoUrl) {
-          const fac = new FastAverageColor();
           const color = await fac.getColorAsync(response.data.profilePhotoUrl);
           setGradientColor(color.rgba);
         }
@@ -74,10 +74,6 @@ const ArtistPage: React.FC = () => {
   const openGallery = (index: number) => {
     setCurrentImageIndex(index);
     setIsGalleryOpen(true);
-  };
-
-  const closeGallery = () => {
-    setIsGalleryOpen(false);
   };
 
   const goToNextImage = () => {
@@ -195,7 +191,7 @@ const ArtistPage: React.FC = () => {
                           {/* Album Title */}
                           <p className="text-sm font-medium">{album.title}</p>
                           {/* Album Year and Type */}
-                          <p className="text-xs text-gray-500">{album.year} &bull; {album.type}</p>
+                          <p className="text-xs text-gray-500">{album.releaseDate} &bull; {album.type}</p>
                         </Link>
                       ))}
                     </div>

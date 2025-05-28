@@ -1,12 +1,12 @@
 import { Card, CardContent } from "@/components/ui/card";
 
 type StatsCardProps = {
-	icon: React.ElementType;
+	icon: React.ElementType<{ className?: string }>;
 	label: string;
 	value: string;
 	bgColor: string;
 	iconColor: string;
-};
+} & React.HTMLAttributes<HTMLDivElement>;
 
 const StatsCard = ({ bgColor, icon: Icon, iconColor, label, value }: StatsCardProps) => {
 	return (
@@ -14,7 +14,7 @@ const StatsCard = ({ bgColor, icon: Icon, iconColor, label, value }: StatsCardPr
 			<CardContent className='p-6'>
 				<div className='flex items-center gap-4'>
 					<div className={`p-3 rounded-lg ${bgColor}`}>
-						<Icon className={`size-6 ${(iconColor as string)}`} />
+						<Icon className={`size-6 ${iconColor}` as string} />
 					</div>
 					<div>
 						<p className='text-sm text-zinc-400'>{label}</p>

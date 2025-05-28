@@ -109,7 +109,7 @@ const AlbumPage = () => {
 										</Link>
 									)}
 									<span>• {currentAlbum?.songs.length} songs</span>
-									<span>• {currentAlbum?.year}</span>
+									<span>• {currentAlbum?.releaseDate}</span>
 									<Button
 										variant="ghost"
 										size="sm"
