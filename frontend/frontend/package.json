@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "laterna-frontend": "file:.."
+  }
+}
