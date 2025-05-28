@@ -27,7 +27,7 @@
 		"noFallthroughCasesInSwitch": true,
 		"noUncheckedSideEffectImports": true,
 
-		"types": ["@react-three/fiber"]
+		"types": []
 	},
 	"include": ["src", "src/types"]
 }
