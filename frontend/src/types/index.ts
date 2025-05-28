@@ -15,9 +15,8 @@ export interface Album {
 	_id: string;
 	title: string;
 	artistId: string;
-	coverUrl: string;
 	imageUrl: string;
-	year: number;
+	releaseDate: string;
 	type: string; // e.g., "Album", "EP"
 	description?: string;
 	songs: Song[];

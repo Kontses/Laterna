@@ -10,9 +10,6 @@ import RecentPlaysGrid from "./components/RecentPlaysGrid"; // Import RecentPlay
 
 const HomePage = () => {
 	const {
-		fetchFeaturedSongs,
-		fetchMadeForYouSongs,
-		fetchTrendingSongs,
 		isLoading,
 		madeForYouSongs,
 		featuredSongs,

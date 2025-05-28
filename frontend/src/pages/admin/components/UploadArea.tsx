@@ -5,7 +5,6 @@ import { Upload } from "lucide-react";
 import { axiosInstance } from "@/lib/axios"; // Import axiosInstance
 import toast from "react-hot-toast"; // Import toast
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ButtonProps } from "@/components/ui/button"; // Import ButtonProps
 import { useAuth } from "@clerk/clerk-react"; // Import useAuth
 import { DndContext, closestCorners, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';

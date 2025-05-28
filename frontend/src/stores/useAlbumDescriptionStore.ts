@@ -7,7 +7,7 @@ interface AlbumDescriptionState {
   toggleAlbumDescription: (description?: string) => void;
 }
 
-export const useAlbumDescriptionStore = create<AlbumDescriptionState>((set, get) => ({
+export const useAlbumDescriptionStore = create<AlbumDescriptionState>((set) => ({
   showAlbumDescription: false,
   albumDescription: "",
   setAlbumDescription: (description) => set({ albumDescription: description }),

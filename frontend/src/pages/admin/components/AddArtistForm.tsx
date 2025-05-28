@@ -32,7 +32,7 @@ const AddArtistForm: React.FC<AddArtistFormProps> = ({ onArtistAdded, onCancel }
     formData.append('about', about);
 
     try {
-      const response = await axiosInstance.post("/api/admin/artists", formData, {
+      await axiosInstance.post("/api/admin/artists", formData, {
         headers: {
           'Content-Type': 'multipart/form-data', // Set content type for file upload
         },
