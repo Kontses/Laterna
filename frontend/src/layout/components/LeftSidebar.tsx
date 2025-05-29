@@ -81,7 +81,7 @@ const LeftSidebar = () => {
 
 									<div className='flex-1 min-w-0 hidden md:block'>
 										<p className='font-medium truncate'>{album.title}</p>
-										<p className='text-sm text-zinc-400 truncate'>Album • {album.artistId} {/* TODO: Fetch artist name */}</p>
+										<p className='text-sm text-zinc-400 truncate'>Album • {album.artistId} {/* TODO: Fetch artist name */} • {album.releaseDate && new Date(album.releaseDate).getFullYear()}</p>
 									</div>
 								</Link>
 							))

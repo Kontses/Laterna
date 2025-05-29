@@ -28,6 +28,20 @@ const calculateMD5 = async (file: File): Promise<string> => {
   });
 };
 
+// Function to get audio duration
+const getAudioDuration = (file: File): Promise<number> => {
+  return new Promise((resolve, reject) => {
+    const audio = new Audio();
+    audio.onloadedmetadata = () => {
+      resolve(audio.duration);
+    };
+    audio.onerror = (event) => {
+      reject(event);
+    };
+    audio.src = URL.createObjectURL(file);
+  });
+};
+
 const UploadArea = () => {
   const [audioFiles, setAudioFiles] = useState<File[]>([]);
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -65,7 +79,10 @@ const UploadArea = () => {
   const [singleSongDetails, setSingleSongDetails] = useState({
     title: "",
     artistId: "", // Change to artistId for single songs as well
-    year: "", // Προσθήκη πεδίου year για singles
+    releaseDate: "", // Add releaseDate for singles
+    generalGenre: "", // Add generalGenre for singles
+    specificGenres: "", // Store as raw string for input for singles
+    description: "", // Added description field for singles
     // Add other single song fields as needed (e.g., genre, tags, description)
   });
 
@@ -78,7 +95,18 @@ const UploadArea = () => {
     description: "", // Added description field
   });
 
-  const [albumSongsDetails, setAlbumSongsDetails] = useState<{ title: string, fileName: string }[]>([]); // Include fileName
+  const [albumSongsDetails, setAlbumSongsDetails] = useState<{ title: string, fileName: string, md5: string, duration: number }[]>([]); // Include fileName, md5, and duration
+
+  // New state for media uploads
+  const [mediaFile, setMediaFile] = useState<File | null>(null);
+  const [mediaDetails, setMediaDetails] = useState({
+    artistId: "",
+    name: "", // Add name field for media
+    description: "",
+  });
+  const [isMediaDragging, setIsMediaDragging] = useState(false);
+  const mediaFileInputRef = useRef<HTMLInputElement>(null);
+  const [isMediaLoading, setIsMediaLoading] = useState(false);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -108,10 +136,11 @@ const UploadArea = () => {
     setIsDragging(false);
     const files = Array.from(event.dataTransfer.files).filter(file => file.type.startsWith('audio/'));
     setAudioFiles(files);
-    // Initialize albumSongsDetails based on dropped files, including fileName and md5 hash
+    // Initialize albumSongsDetails based on dropped files, including fileName, md5 hash, and duration
     const songsDetails = await Promise.all(files.map(async file => {
       const md5 = await calculateMD5(file);
-      return { title: file.name.replace(/\.[^/.]+$/, ""), fileName: file.name, md5: md5 };
+      const duration = await getAudioDuration(file);
+      return { title: file.name.replace(/\.[^/.]+$/, ""), fileName: file.name, md5: md5, duration: duration };
     }));
     setAlbumSongsDetails(songsDetails);
   };
@@ -119,10 +148,11 @@ const UploadArea = () => {
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files || []).filter(file => file.type.startsWith('audio/'));
     setAudioFiles(files);
-     // Initialize albumSongsDetails based on selected files, including fileName and md5 hash
+     // Initialize albumSongsDetails based on selected files, including fileName, md5 hash, and duration
     const songsDetails = await Promise.all(files.map(async file => {
       const md5 = await calculateMD5(file);
-      return { title: file.name.replace(/\.[^/.]+$/, ""), fileName: file.name, md5: md5 };
+      const duration = await getAudioDuration(file);
+      return { title: file.name.replace(/\.[^/.]+$/, ""), fileName: file.name, md5: md5, duration: duration };
     }));
     setAlbumSongsDetails(songsDetails);
   };
@@ -172,7 +202,9 @@ const UploadArea = () => {
 
     // Append form details based on the number of audio files
     if (audioFiles.length === 1) {
-      formData.append('singleSongDetails', JSON.stringify(singleSongDetails));
+      // When submitting a single song, process specificGenres and include all fields
+      const specificGenresArray = (singleSongDetails.specificGenres as any as string).split(',').map(tag => tag.trim()).filter(tag => tag !== '');
+      formData.append('singleSongDetails', JSON.stringify({...singleSongDetails, specificGenres: specificGenresArray})); // Send processed specificGenres
     } else {
       // When submitting, split and trim specificGenres from the raw input value
       const specificGenresArray = (albumDetails.specificGenres as any as string).split(',').map(tag => tag.trim()).filter(tag => tag !== '');
@@ -195,7 +227,7 @@ const UploadArea = () => {
       // Clear form
       setAudioFiles([]);
       setImageFile(null);
-      setSingleSongDetails({ title: "", artistId: "", year: "" }); // Καθαρισμός year
+      setSingleSongDetails({ title: "", artistId: "", releaseDate: "", generalGenre: "", specificGenres: "" as string, description: "" }); // Clear all single song fields
       setAlbumDetails({ title: "", artistId: "", releaseDate: "", generalGenre: "", specificGenres: "" as string, description: "" }); // Clear specificGenres as raw string and add description
       setAlbumSongsDetails([]);
        if (fileInputRef.current) fileInputRef.current.value = "";
@@ -234,7 +266,7 @@ const UploadArea = () => {
   };
 
   // SortableItem component for individual songs
-  const SortableItem = ({ song, index }: { song: { title: string, fileName: string }, index: number }) => { // Update prop type
+  const SortableItem = ({ song, index }: { song: { title: string, fileName: string, md5: string, duration: number }, index: number }) => { // Update prop type
     const {
       attributes,
       listeners,
@@ -278,6 +310,74 @@ const UploadArea = () => {
     );
   };
 
+  // New handlers for media upload
+  const handleMediaDragOver = (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    setIsMediaDragging(true);
+  };
+
+  const handleMediaDragLeave = (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    setIsMediaDragging(false);
+  };
+
+  const handleMediaDrop = (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    setIsMediaDragging(false);
+    const file = Array.from(event.dataTransfer.files).filter(file => file.type.startsWith('image/') || file.type.startsWith('video/'))[0];
+    if (file) {
+      setMediaFile(file);
+    }
+  };
+
+  const handleMediaFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = Array.from(event.target.files || []).filter(file => file.type.startsWith('image/') || file.type.startsWith('video/'))[0];
+     if (file) {
+      setMediaFile(file);
+    }
+  };
+
+  const handleMediaSubmit = async () => {
+    if (!mediaFile) {
+      toast.error("Please upload a media file.");
+      return;
+    }
+    if (!mediaDetails.artistId) {
+       toast.error("Please select an artist.");
+       return;
+    }
+
+    setIsMediaLoading(true);
+    const formData = new FormData();
+    formData.append('mediaFile', mediaFile);
+    formData.append('artistId', mediaDetails.artistId);
+    formData.append('description', mediaDetails.description);
+    formData.append('name', mediaDetails.name); // Append the media name
+
+    try {
+      const token = await getToken();
+      const response = await axiosInstance.post("/admin/upload-media", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          "Authorization": `Bearer ${token}`,
+        },
+      });
+
+      console.log("Media upload successful:", response.data);
+      toast.success("Media uploaded successfully!");
+
+      // Clear form
+      setMediaFile(null);
+      setMediaDetails({ artistId: "", name: "", description: "" }); // Clear media details including name
+      if (mediaFileInputRef.current) mediaFileInputRef.current.value = "";
+
+    } catch (error: any) {
+      console.error("Media upload failed:", error);
+      toast.error("Media upload failed: " + (error.response?.data?.message || error.message));
+    } finally {
+      setIsMediaLoading(false);
+    }
+  };
 
   return (
     <div className='space-y-6'>
@@ -355,14 +455,67 @@ const UploadArea = () => {
                     </SelectContent>
                   </Select>
                 </div>
+                {/* Add Release Date field for singles */}
                 <div className='space-y-2'>
-                  <label className='text-sm font-medium'>Year</label>
+                  <label className='text-sm font-medium'>Release Date</label>
                   <Input
-                    type='number'
-                    value={singleSongDetails.year}
-                    onChange={(e) => setSingleSongDetails({ ...singleSongDetails, year: e.target.value })}
+                    type='date'
+                    value={singleSongDetails.releaseDate}
+                    onChange={(e) => setSingleSongDetails({ ...singleSongDetails, releaseDate: e.target.value })}
                     className='bg-zinc-800 border-zinc-700'
-                    placeholder='Enter year'
+                  />
+                </div>
+                {/* Add Genre Section for singles */}
+                <div className="space-y-4">
+                  <h4 className="text-lg font-semibold mt-6">Genre</h4>
+                  <div className='space-y-2'>
+                    <label className='text-sm font-medium'>General Genre</label>
+                    <Select onValueChange={(value) => setSingleSongDetails({ ...singleSongDetails, generalGenre: value })} value={singleSongDetails.generalGenre}>
+                      <SelectTrigger className="w-[180px] bg-zinc-800 border-zinc-700">
+                        <SelectValue placeholder="Select a genre" />
+                      </SelectTrigger>
+                      <SelectContent className='bg-zinc-900 text-white border-zinc-700'>
+                        <SelectItem value="Alternative">Alternative</SelectItem>
+                        <SelectItem value="Ambient">Ambient</SelectItem>
+                        <SelectItem value="Blues">Blues</SelectItem>
+                        <SelectItem value="Classical">Classical</SelectItem>
+                        <SelectItem value="Dance">Dance</SelectItem>
+                        <SelectItem value="DJ Set">DJ Set</SelectItem>
+                        <SelectItem value="Electronic">Electronic</SelectItem>
+                        <SelectItem value="Folk">Folk</SelectItem>
+                        <SelectItem value="Hip Hop/Rap">Hip Hop/Rap</SelectItem>
+                        <SelectItem value="Jazz">Jazz</SelectItem>
+                        <SelectItem value="Metal">Metal</SelectItem>
+                        <SelectItem value="Pop">Pop</SelectItem>
+                        <SelectItem value="Punk">Punk</SelectItem>
+                        <SelectItem value="Reggae">Reggae</SelectItem>
+                        <SelectItem value="Rock">Rock</SelectItem>
+                        <SelectItem value="Singer/Songwriter">Singer/Songwriter</SelectItem>
+                        <SelectItem value="Soundtrack">Soundtrack</SelectItem>
+                        <SelectItem value="Spoken Word">Spoken Word</SelectItem>
+                        <SelectItem value="World">World</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className='space-y-2'>
+                    <label className='text-sm font-medium'>Specific Genre (comma-separated tags)</label>
+                    <Input
+                      value={singleSongDetails.specificGenres as any as string}
+                      onChange={(e) => setSingleSongDetails({ ...singleSongDetails, specificGenres: e.target.value })} // Update state with raw string
+                      className='bg-zinc-800 border-zinc-700'
+                      placeholder='e.g., Indie Rock, Psychedelic, Garage'
+                    />
+                  </div>
+                </div>
+                {/* Add Description field for singles */}
+                <div className='space-y-2'>
+                  <label htmlFor="single-description" className='text-sm font-medium'>Song Description</label>
+                  <textarea
+                    id="single-description"
+                    value={singleSongDetails.description}
+                    onChange={(e) => setSingleSongDetails({ ...singleSongDetails, description: e.target.value })}
+                    className='flex h-20 w-full rounded-md border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm ring-offset-zinc-950 placeholder:text-zinc-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 min-h-[80px]'
+                    placeholder='Enter song description'
                   />
                 </div>
                 {/* Add other single song fields here */}
@@ -412,7 +565,7 @@ const UploadArea = () => {
                     id="description"
                     value={albumDetails.description}
                     onChange={(e) => setAlbumDetails({ ...albumDetails, description: e.target.value })}
-                    className='flex h-20 w-full rounded-md border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm ring-offset-zinc-950 placeholder:text-zinc-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-300 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 min-h-[80px]'
+                    className='flex h-20 w-full rounded-md border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm ring-offset-zinc-950 placeholder:text-zinc-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 min-h-[80px]'
                     placeholder='Enter album description'
                   />
                 </div>
@@ -492,6 +645,72 @@ const UploadArea = () => {
           </Button>
         </div>
       )}
+
+      {/* 3. Add Music Videos or Photos Section */}
+      <h3 className="text-lg font-semibold text-white mt-8">3. Add Music Videos or Photos</h3>
+       <div
+        className={`border-2 border-dashed rounded-lg p-6 text-center ${
+          isMediaDragging ? 'border-blue-500 bg-blue-900/20' : 'border-zinc-700 bg-zinc-800/50'
+        }`}
+        onDragOver={handleMediaDragOver}
+        onDragLeave={handleMediaDragLeave}
+        onDrop={handleMediaDrop}
+      >
+        <div className='mb-4'>
+          <Upload className='mx-auto h-12 w-12 text-zinc-400' />
+        </div>
+        <p className='text-zinc-400 mb-4'>Drag and drop video or image files here, or click to select files</p>
+        <input type="file" accept="image/*,video/*" className="hidden" id="media-upload-input" onChange={handleMediaFileSelect} ref={mediaFileInputRef} />
+        <label htmlFor="media-upload-input" className="cursor-pointer bg-violet-500 hover:bg-violet-600 text-white font-bold py-2 px-4 rounded">
+          Choose file
+        </label>
+         {mediaFile && (
+          <p className="mt-2 text-sm text-zinc-400">Selected file: {mediaFile.name}</p>
+        )}
+      </div>
+
+      {mediaFile && (
+        <div className="space-y-4">
+           <div className='space-y-2'>
+            <label className='text-sm font-medium'>Artist</label>
+             <Select onValueChange={(value) => setMediaDetails({ ...mediaDetails, artistId: value })} value={mediaDetails.artistId}>
+              <SelectTrigger className="w-full bg-zinc-800 border-zinc-700">
+                <SelectValue placeholder={loadingArtists ? "Loading artists..." : "Select an artist"} />
+              </SelectTrigger>
+              <SelectContent className='bg-zinc-900 text-white border-zinc-700'>
+                {artists.map(artist => (
+                  <SelectItem key={artist._id} value={artist._id}>
+                    {artist.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+           <div className='space-y-2'>
+             <label className='text-sm font-medium'>Name</label>
+             <Input
+               value={mediaDetails.name}
+               onChange={(e) => setMediaDetails({ ...mediaDetails, name: e.target.value })}
+               className='bg-zinc-800 border-zinc-700'
+               placeholder='Enter media name'
+             />
+           </div>
+           <div className='space-y-2'>
+            <label htmlFor="media-description" className='text-sm font-medium'>Description</label>
+             <textarea
+              id="media-description"
+              value={mediaDetails.description}
+              onChange={(e) => setMediaDetails({ ...mediaDetails, description: e.target.value })}
+              className='flex h-20 w-full rounded-md border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm ring-offset-zinc-950 placeholder:text-zinc-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 min-h-[80px]'
+              placeholder='Enter description'
+            />
+          </div>
+           <Button onClick={handleMediaSubmit} className='bg-violet-500 hover:bg-violet-600' disabled={isMediaLoading}>
+            {isMediaLoading ? 'Uploading Media...' : 'Upload Media'}
+          </Button>
+        </div>
+      )}
+
     </div>
   );
 };

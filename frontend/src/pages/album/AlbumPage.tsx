@@ -36,7 +36,7 @@ const AlbumPage = () => {
 		const fetchArtistNameAndExtractColor = async () => { // Renamed function back
 			if (currentAlbum?.artistId) {
 				try {
-					const response = await axiosInstance.get(`/api/artists/${currentAlbum.artistId}`);
+					const response = await axiosInstance.get(`/artists/${currentAlbum.artistId}`);
 					setArtistName(response.data.name);
 				} catch (error) {
 					console.error("Error fetching artist name:", error);
@@ -109,7 +109,7 @@ const AlbumPage = () => {
 										</Link>
 									)}
 									<span>• {currentAlbum?.songs.length} songs</span>
-									<span>• {currentAlbum?.releaseDate}</span>
+									<span>• {currentAlbum?.releaseDate && new Date(currentAlbum.releaseDate).getFullYear()}</span>
 									<Button
 										variant="ghost"
 										size="sm"
