@@ -30,7 +30,7 @@ initializeSocket(httpServer);
 
 app.use(
 	cors({
-		origin: "http://localhost:3000",
+		origin: ["http://localhost:3000", "https://laterna-git-master-kontses-projects.vercel.app"],
 		credentials: true,
 	})
 );

@@ -5,7 +5,7 @@ import { User } from "../models/user.model.js"; // Import User model
 export const initializeSocket = (server) => {
 	const io = new Server(server, {
 		cors: {
-			origin: "http://localhost:3000",
+			origin: ["http://localhost:3000", "https://laterna-git-master-kontses-projects.vercel.app"],
 			credentials: true,
 		},
 	});
