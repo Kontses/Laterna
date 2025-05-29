@@ -17,7 +17,7 @@ export const useRecentPlaysStore = create<RecentPlaysStore>((set) => ({
 	fetchRecentPlays: async () => {
 		set({ isLoading: true, error: null });
 		try {
-			const response = await axiosInstance.get("/api/users/recent-plays");
+			const response = await axiosInstance.get("/users/recent-plays");
 			set({ recentPlays: response.data });
 		} catch (error: any) {
 			set({ error: error.message });

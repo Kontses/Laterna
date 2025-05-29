@@ -44,7 +44,7 @@ const UploadArea = () => {
     const fetchArtists = async () => {
       try {
         const token = await getToken();
-        const response = await axiosInstance.get("/api/admin/artists", {
+        const response = await axiosInstance.get("/admin/artists", {
           headers: {
             "Authorization": `Bearer ${token}`,
           },
@@ -182,7 +182,7 @@ const UploadArea = () => {
 
     try {
       const token = await getToken(); // Get the token
-      const response = await axiosInstance.post("/api/admin/upload", formData, {
+      const response = await axiosInstance.post("/admin/upload", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
           "Authorization": `Bearer ${token}`, // Add Authorization header

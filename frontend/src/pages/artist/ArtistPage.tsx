@@ -33,7 +33,7 @@ const ArtistPage: React.FC = () => {
 
       try {
         setIsLoading(true);
-        const response = await axiosInstance.get(`/api/artists/${artistId}`);
+        const response = await axiosInstance.get(`/artists/${artistId}`);
         setArtist(response.data);
         setIsFollowing(response.data.isFollowing); // Set initial follow status
         setError(null);
@@ -60,7 +60,7 @@ const ArtistPage: React.FC = () => {
     if (!artistId) return;
 
     try {
-      const endpoint = `/api/artists/${artistId}/toggle-follow`;
+      const endpoint = `/artists/${artistId}/toggle-follow`;
       const method = isFollowing ? 'delete' : 'post'; // Use DELETE for unfollow, POST for follow
 
       await axiosInstance[method](endpoint);
