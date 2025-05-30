@@ -39,6 +39,7 @@ const ArtistPage: React.FC = () => {
         setArtist(response.data);
         setIsFollowing(response.data.isFollowing); // Set initial follow status
         setError(null);
+        console.log("Fetched artist data:", response.data);
 
         if (response.data?.profilePhotoUrl) {
           const color = await fac.getColorAsync(response.data.profilePhotoUrl);
@@ -59,14 +60,20 @@ const ArtistPage: React.FC = () => {
   }, [artistId]);
 
   const handleFollowToggle = async () => {
-    if (!artistId) return;
+    console.log("handleFollowToggle called");
+    if (!artistId) {
+      console.log("Artist ID missing");
+      return;
+    }
 
     try {
       const endpoint = `/artists/${artistId}/toggle-follow`;
-      const method = isFollowing ? 'delete' : 'post'; // Use DELETE for unfollow, POST for follow
+      const method = isFollowing ? 'delete' : 'post';
+      console.log(`Calling API: ${method.toUpperCase()} ${endpoint}`);
 
       await axiosInstance[method](endpoint);
       setIsFollowing(!isFollowing); // Toggle the state on success
+      console.log("Follow status toggled successfully. New state:", !isFollowing);
     } catch (error) {
       console.error("Error toggling follow status:", error);
       // Optionally, revert the UI state or show an error message
@@ -137,8 +144,10 @@ const ArtistPage: React.FC = () => {
     return <div className="container mx-auto p-4">Artist not found.</div>;
   }
 
-  // Combine profile photo and uploaded photos for gallery
-  const allGalleryImagesForModal = [...(artist.photos || [])]; // Use uploaded photos
+  // Combine profile photo and artist photos for gallery modal
+  const allGalleryImagesForModal = artist.profilePhotoUrl ? 
+    [{ url: artist.profilePhotoUrl, name: `${artist.name}'s profile`, _id: 'profile-photo' }, ...(artist.photos || [])] : 
+    ([...(artist.photos || [])]);
 
   return (
     <div className='h-full'>
@@ -174,7 +183,7 @@ const ArtistPage: React.FC = () => {
                 className='w-14 h-14 rounded-full bg-purple-500 hover:bg-purple-400
                   hover:scale-105 transition-all'
               >
-                <Play className='h-7 w-7 text-black' />
+                <Play className='h-7 w-7 text-black' fill='black' />
               </Button>
               <Button
                 variant="ghost"
@@ -227,27 +236,49 @@ const ArtistPage: React.FC = () => {
               </section>
 
               {/* Gallery Section */}
-              {artist.photos && artist.photos.length > 0 && (
-                <section className="mb-8">
-                  <h2 className="text-2xl font-semibold mb-4">Gallery</h2>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                    {artist.photos.map((photo, index) => (
-                      <div key={photo._id} className="relative group cursor-pointer">
+              <section className="mb-8">
+                <h2 className="text-2xl font-semibold mb-4">Gallery</h2>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                  {/* Artist Profile Photo as the first item */}
+                  {artist.profilePhotoUrl && (
+                    <div 
+                      key="profile-photo" 
+                      className="relative group cursor-pointer transition-all duration-300 hover:scale-105"
+                      onClick={() => openGallery(0)} // Move onClick to the parent div
+                    >
+                         <img
+                         src={artist.profilePhotoUrl}
+                         alt={`${artist.name}'s profile`}
+                         className="w-full h-48 object-cover rounded-md"
+                       />
+                         {/* Optional: Overlay on hover */}
+                       <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-md">
+                         <span className="text-white text-center text-sm font-semibold px-2">View Image</span>
+                       </div>
+                     </div>
+                  )}
+                  {/* Additional Gallery Photos */}
+                  {artist.photos && artist.photos.length > 0 && (
+                    artist.photos.map((photo, index) => (
+                      <div 
+                        key={photo._id} 
+                        className="relative group cursor-pointer transition-all duration-300 hover:scale-105"
+                        onClick={() => openGallery((artist.profilePhotoUrl ? 1 : 0) + index)} // Move onClick to the parent div
+                      >
                            <img
                            src={photo.url}
                            alt={photo.name || `Gallery image ${index + 1}`}
-                           className="w-full h-48 object-cover rounded-md transition-all duration-300 group-hover:scale-105"
-                           onClick={() => openGallery(index)} // Open gallery modal on click
+                           className="w-full h-48 object-cover rounded-md"
                          />
                            {/* Optional: Display photo name or description on hover */}
                          <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-md">
                            <span className="text-white text-center text-sm font-semibold px-2">{photo.name || "View Image"}</span>
                          </div>
                        </div>
-                    ))}
-                  </div>
-                </section>
-              )}
+                    ))
+                  )}
+                </div>
+              </section>
 
               {/* Music Videos Section */}
               {artist.musicVideos && artist.musicVideos.length > 0 && (
@@ -302,14 +333,6 @@ const ArtistPage: React.FC = () => {
                    onClick={goToNextImage}
                  >
                    <ChevronRight className="h-7 w-7" />
-                 </Button>
-                 <Button
-                   variant="ghost"
-                   size="icon"
-                   className="absolute bottom-4 right-1/2 translate-x-1/2 text-white hover:bg-white/10 flex items-center gap-2"
-                   onClick={downloadImage}
-                 >
-                   <Download className="h-5 w-5" /> Download
                  </Button>
                </div>
              )}

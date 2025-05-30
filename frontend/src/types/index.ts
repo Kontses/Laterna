@@ -20,6 +20,7 @@ export interface Album {
 	type: string; // e.g., "Album", "EP"
 	description?: string;
 	songs: Song[];
+	additionalFiles?: MediaItem[]; // Added for additional photos/files in albums
 }
 
 export interface Single {
