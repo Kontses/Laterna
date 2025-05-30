@@ -6,7 +6,6 @@ import { useAlbumDescriptionStore } from "@/stores/useAlbumDescriptionStore"; //
 import { Clock, Pause, Play, Download } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { axiosInstance } from "@/lib/axios";
 import { FastAverageColor } from 'fast-average-color'; // Added import
 import { Artist } from "@/types"; // Εισαγωγή του τύπου Artist
 import {

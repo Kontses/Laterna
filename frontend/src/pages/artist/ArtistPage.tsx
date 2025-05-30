@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Artist, MediaItem } from '../../types';
+import { Artist } from '../../types';
 import { axiosInstance } from '@/lib/axios';
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { FastAverageColor } from 'fast-average-color';
 import { Button } from "@/components/ui/button"; // Import Button
-import { Play, Download, ChevronLeft, ChevronRight } from "lucide-react"; // Import icons
+import { Play, ChevronLeft, ChevronRight } from "lucide-react"; // Import icons
 import { Link } from "react-router-dom"; // Import Link
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"; // Import Dialog components and DialogTitle
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden"; // Import VisuallyHidden
@@ -114,23 +114,6 @@ const ArtistPage: React.FC = () => {
       }
     }
   };
-
-  const downloadImage = () => {
-    if (artist) {
-      const allImages = [...(artist.photos || [])]; // Use uploaded photos for gallery
-      if (allImages.length > 0 && allImages[currentImageIndex]) {
-        const imageUrl = allImages[currentImageIndex].url; // Use .url for MediaItem
-        console.log("Attempting to download image:", imageUrl);
-        const link = document.createElement('a');
-        link.href = imageUrl;
-        link.setAttribute('download', `artist_image_${currentImageIndex + 1}.jpg`);
-        link.setAttribute('target', '_blank');
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-      }
-    }
-  }; // <--- Η κλείνουσα αγκύλη που έλειπε ήταν εδώ!
 
   if (isLoading) {
     return <div className="container mx-auto p-4">Loading artist data...</div>;

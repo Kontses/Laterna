@@ -12,7 +12,7 @@ const AdminPage = () => {
 	const [showAddArtistForm, setShowAddArtistForm] = useState(false); // State to control form visibility
 	const [artistListVersion, setArtistListVersion] = useState(0); // New state for artist list version
 
-	const { fetchAlbums, fetchSongs, fetchStats, fetchArtists } = useMusicStore(); // Destructure fetchArtists
+	const { fetchAlbums, fetchSongs, fetchStats } = useMusicStore(); // Destructure fetchArtists
 
 	useEffect(() => {
 		fetchAlbums();
