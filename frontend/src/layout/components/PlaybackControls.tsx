@@ -90,10 +90,17 @@ export const PlaybackControls = () => {
 								alt={currentSong.title}
 								className='w-14 h-14 object-cover rounded-md'
 							/>
-							<div className='flex-1 min-w-0'>
-								<div className='font-medium truncate hover:underline cursor-pointer'>
-									{currentSong.title}
-								</div>
+							<div className='flex-1 min-w-0 flex flex-col'>
+								{currentSong?.albumId ? (
+									<Link to={`/albums/${currentSong.albumId}`} className='font-medium truncate hover:underline'>
+										{currentSong.title}
+									</Link>
+								) : (
+									<Link to={`/artists/${currentSong?.artistId}`} className='font-medium truncate hover:underline'>
+										{currentSong?.title}
+									</Link>
+								)}
+
 								{currentSong?.artistId && (
 									<Link to={`/artists/${currentSong.artistId}`} className='text-sm text-zinc-400 truncate hover:underline'>
 										{currentSong.artist}

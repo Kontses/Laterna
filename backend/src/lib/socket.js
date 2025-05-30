@@ -50,8 +50,8 @@ export const initializeSocket = (server) => {
 
 				// Although $slice can be used with $push, applying it here separately
 				// ensures we limit after adding, and keeps the $push simple.
-				if (user && user.recentPlays.length > 10) {
-					user.recentPlays = user.recentPlays.slice(0, 10);
+				if (user && user.recentPlays.length > 8) {
+					user.recentPlays = user.recentPlays.slice(0, 8);
 					await user.save();
 				}
 

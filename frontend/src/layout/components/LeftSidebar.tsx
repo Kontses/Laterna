@@ -7,6 +7,7 @@ import { SignedIn } from "@clerk/clerk-react";
 import { HomeIcon, Library, MessageCircle } from "lucide-react";
 import { useEffect } from "react";
 import { Link } from "react-router-dom";
+import { Artist } from "@/types";
 
 const LeftSidebar = () => {
 	const { albums, fetchAlbums, isLoading } = useMusicStore();
@@ -81,7 +82,7 @@ const LeftSidebar = () => {
 
 									<div className='flex-1 min-w-0 hidden md:block'>
 										<p className='font-medium truncate'>{album.title}</p>
-										<p className='text-sm text-zinc-400 truncate'>Album • {album.artistId} {/* TODO: Fetch artist name */} • {album.releaseDate && new Date(album.releaseDate).getFullYear()}</p>
+										<p className='text-sm text-zinc-400 truncate'>Album • {album.artistId && typeof album.artistId === 'object' ? (album.artistId as Artist).name : "Unknown Artist"} {/* Χρήση του populate ονόματος καλλιτέχνη */}</p>
 									</div>
 								</Link>
 							))

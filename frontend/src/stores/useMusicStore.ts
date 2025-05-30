@@ -167,8 +167,8 @@ export const useMusicStore = create<MusicStore>((set) => ({
 	fetchArtists: async () => {
 		set({ isLoading: true, error: null });
 		try {
-			const response = await axiosInstance.get("/artists");
-			set({ artists: response.data }); // Set artists state
+			const response = await axiosInstance.get("/admin/artists");
+			set({ artists: response.data });
 		} catch (error: any) {
 			set({ error: error.message });
 		} finally {

@@ -171,32 +171,39 @@ export const handleUpload = async (req, res, next) => {
 		console.log("req.files:", req.files); // Log the req.files object
 		const audioFiles = req.files?.audioFiles; // Get the array of audio files
 		const imageFile = req.files?.imageFile; // Assuming image file is sent under the key 'imageFile'
-		const { albumDetails, singleSongDetails, albumSongsDetails } = req.body; // Assuming these are sent in the request body
+		// Get additional album files
+		const additionalAlbumFiles = req.files?.additionalAlbumFiles; // Get the array of additional files
+
+		const { albumDetails, singleSongDetails, albumSongsDetails, additionalAlbumFileNames } = req.body; // Get additionalAlbumFileNames from req.body
 
 		// Check if it's an album upload (multiple audio files) or single song upload
 		if (albumSongsDetails) {
 			// Album upload
-			const parsedAlbumDetails = JSON.parse(albumDetails); // Parse albumDetails JSON
-			const parsedAlbumSongsDetails = JSON.parse(albumSongsDetails); // Parse albumSongsDetails JSON
-			console.log("Parsed albumSongsDetails:", parsedAlbumSongsDetails); // Log parsedAlbumSongsDetails
+			const parsedAlbumDetails = JSON.parse(albumDetails);
+			const parsedAlbumSongsDetails = JSON.parse(albumSongsDetails);
+			console.log("Parsed albumSongsDetails:", parsedAlbumSongsDetails);
+			const parsedAdditionalAlbumFileNames = additionalAlbumFileNames ? JSON.parse(additionalAlbumFileNames) : []; // Parse additionalAlbumFileNames if they exist
 
 			if (!audioFiles || !imageFile || !albumDetails || !albumSongsDetails) {
-				return res.status(400).json({ message: "Missing audio files, image, album details, or song details for album upload" });
+				return res.status(400).json({ message: "Missing required files or details for album upload" });
 			}
 
-			// Construct the new image public ID with the desired naming convention
-			const uploadDate = new Date().toISOString().split('T')[0]; // Get current date in YYYY-MM-DD format
 			const artist = await Artist.findById(parsedAlbumDetails.artistId);
-			const artistName = artist ? artist.name : 'unknown_artist'; // Changed fallback to a valid folder name
+			const artistName = artist ? artist.name : 'unknown_artist';
 			const albumTitle = parsedAlbumDetails.title;
-			const newImagePublicId = `laterna/artists/${artistName}/${albumTitle}/${artistName} - ${albumTitle}`; // Full path as public ID
-			const imageUrl = await uploadToCloudinary(imageFile, null, newImagePublicId); // Pass null for folder
+
+			// Construct the base folder path for the album
+			const albumFolderPath = `laterna/artists/${artistName}/${albumTitle}`;
+
+			// Upload album image
+			const imagePublicId = `${artistName} - ${albumTitle}`; // Public ID for the album image
+			const imageUrl = await uploadToCloudinary(imageFile, albumFolderPath, imagePublicId); // Pass folder and publicId
 
 			let album;
 			// Check if an album with the same title and artist already exists
 			const existingAlbum = await Album.findOne({
 				title: parsedAlbumDetails.title,
-				artistId: parsedAlbumDetails.artistId, // Use artistId
+				artistId: parsedAlbumDetails.artistId,
 			});
 
 			if (existingAlbum) {
@@ -207,90 +214,102 @@ export const handleUpload = async (req, res, next) => {
 				album.releaseDate = new Date(parsedAlbumDetails.releaseDate);
 				album.generalGenre = parsedAlbumDetails.generalGenre;
 				album.specificGenres = parsedAlbumDetails.specificGenres;
-				album.description = parsedAlbumDetails.description; // Update description
-				// Clear existing songs
+				album.description = parsedAlbumDetails.description;
+				// Clear existing songs and additional files if overwriting
 				await Song.deleteMany({ albumId: album._id });
-				album.songs = []; // Clear song references in the album
+				album.songs = [];
+				album.additionalFiles = []; // Clear existing additional files
 			} else {
 				console.log(`No existing album found. Creating a new album: ${parsedAlbumDetails.title} with artist ID ${parsedAlbumDetails.artistId}.`);
 				// If no existing album found, create a new one
 				album = new Album({
 					title: parsedAlbumDetails.title,
-					artistId: parsedAlbumDetails.artistId, // Use artistId
+					artistId: parsedAlbumDetails.artistId,
 					imageUrl,
 					releaseDate: new Date(parsedAlbumDetails.releaseDate),
 					generalGenre: parsedAlbumDetails.generalGenre,
-					specificGenres: parsedAlbumSongsDetails.specificGenres, // Use specificGenres from albumSongsDetails
-					description: parsedAlbumDetails.description, // Include description
+					specificGenres: parsedAlbumDetails.specificGenres, // Corrected to use albumDetails specific genres
+					description: parsedAlbumDetails.description,
 				});
 			}
 
-			await album.save(); // Save the new or updated album
+			// Upload audio files and create Song documents
+			const uploadedSongs = [];
+			// Iterate through parsedAlbumSongsDetails to maintain the order
+			for (let i = 0; i < parsedAlbumSongsDetails.length; i++) {
+				const songDetails = parsedAlbumSongsDetails[i];
+				console.log("Processing song details:", songDetails); // Log the song details
 
-			const songIds = [];
-			// Iterate through parsedAlbumSongsDetails to maintain order
-			for (const songDetails of parsedAlbumSongsDetails) {
-				// Find the corresponding audio file within the audioFiles array using md5 hash
-				const audioFile = audioFiles.find(file => file.md5 === songDetails.md5);
+				// Find the corresponding audio file in req.files.audioFiles using the md5 hash
+				const audioFile = audioFiles.find(file => file.md5 === songDetails.md5); // Match using md5 hash
 
 				if (!audioFile) {
-					console.error(`Audio file not found in uploaded files for song (MD5 mismatch): ${songDetails.fileName}`);
-					// Depending on requirements, you might want to return an error or skip this song
-					continue;
+					console.warn(`Could not find audio file with md5: ${songDetails.md5}. Skipping song details.`);
+					continue; // Skip this song detail if the file is not found
 				}
 
-				console.log("Audio file object:", audioFile); // Log the audio file object
+				// Construct the public ID for the audio file
+				const audioPublicId = `${artistName} - ${albumTitle} - ${songDetails.title}`; // Public ID using song title
 
-				// Construct the song public ID with the desired naming convention
-				// We might need the artist's name for the folder structure, but the song model uses artistId
-				// Let's fetch the artist name using the artistId from the album
-				const artist = await Artist.findById(parsedAlbumDetails.artistId);
-				const artistName = artist ? artist.name : 'unknown_artist'; // Changed fallback to a valid folder name
+				// Upload audio file to Cloudinary
+				const audioUrl = await uploadToCloudinary(audioFile, albumFolderPath, audioPublicId, 'video'); // Use 'video' for audio resources and pass folder/publicId
 
-				const songTitle = songDetails.title;
-				// Assuming trackNumber is available in songDetails if needed for public ID
-				const newSongPublicId = `laterna/artists/${artistName}/${parsedAlbumDetails.title}/${songDetails.trackNumber ? `${songDetails.trackNumber}) ` : ''}${songTitle}`; // Full path as public ID
-				const audioUrl = await uploadToCloudinary(audioFile, null, newSongPublicId, "video"); // Pass null for folder
-				console.log(`Processing song:`, songDetails); // Log song details
-				console.log(`Song title: ${songDetails.title}`); // Log song title
-
-
-				const song = new Song({
-					title: songDetails.title, // Use the original song title
-					artist: artistName, // Store artist name in song model for easier access
-					artistId: parsedAlbumDetails.artistId, // Store artistId in song model
-					audioUrl, // audioUrl already includes the public ID from uploadToCloudary
-					imageUrl, // Using album image for songs in album
-					duration: 0, // TODO: Get actual duration
+				// Create a new Song document
+				const newSong = new Song({
+					title: songDetails.title,
+					artist: artistName,
+					artistId: parsedAlbumDetails.artistId,
+					audioUrl,
+					imageUrl: album.imageUrl, // Use album image as song image
+					duration: songDetails.duration,
 					albumId: album._id,
-					generalGenre: parsedAlbumDetails.generalGenre, // Include generalGenre for songs
-					specificGenres: parsedAlbumDetails.specificGenres, // Include specificGenres for songs
+					md5Hash: songDetails.md5, // Store MD5 hash
+					order: i, // Store the order of the song
 				});
 
-				await song.save();
-				songIds.push(song._id);
+				await newSong.save();
+				uploadedSongs.push(newSong._id); // Store the ID of the saved song
 			}
 
-			// Update album with song IDs
-			album.songs = songIds;
+			// Add uploaded song IDs to the album's songs array
+			album.songs = uploadedSongs;
+
+			// Upload additional album files if they exist
+			const additionalFileUrls = [];
+			if (additionalAlbumFiles && Array.isArray(additionalAlbumFiles)) {
+				const additionalFilesFolderPath = `${albumFolderPath}/additional`; // Subfolder for additional files
+				for (let i = 0; i < additionalAlbumFiles.length; i++) { // Use index for matching with file names
+					const file = additionalAlbumFiles[i];
+					const originalFileName = parsedAdditionalAlbumFileNames[i] || file.name; // Get original file name from the parsed list or fallback to file.name
+
+					const resourceType = file.mimetype.startsWith('image/') ? 'image' : 'raw';
+
+					// Construct a public ID for the additional file using the originalFileName
+					const additionalFilePublicId = `${artistName} - ${albumTitle} - ${originalFileName.replace(/\.[^/.]+$/, "")}`; // Use originalFileName for file name
+
+					const fileUrl = await uploadToCloudinary(file, additionalFilesFolderPath, additionalFilePublicId, resourceType); // Pass folder and publicId
+					additionalFileUrls.push(fileUrl);
+				}
+			}
+			album.additionalFiles = additionalFileUrls;
+
 			await album.save();
 
-			res.status(201).json(album);
+			res.status(201).json(album); // Respond with the created/updated album
 
 		} else if (singleSongDetails) {
-			// Single audio file upload
+			// Single song upload
+			const parsedSingleSongDetails = JSON.parse(singleSongDetails);
+
 			if (!imageFile || !singleSongDetails) {
 				return res.status(400).json({ message: "Missing image or song details for single song upload" });
 			}
 
-			const parsedSingleSongDetails = JSON.parse(singleSongDetails); // Parse singleSongDetails JSON
-
 			// Find the single audio file in req.files. Assuming the frontend sends it with a specific key or the only file
 			// A more robust approach would be to send the single audio file with a known key from the frontend
 			// For now, let's assume it's the only file in req.files besides the imageFile
-			const audioFileKey = Object.keys(req.files).find(key => key !== 'imageFile');
+			const audioFileKey = Object.keys(req.files).find(key => key !== 'imageFile' && key !== 'additionalAlbumFiles'); // Exclude additionalAlbumFiles here too
 			const audioFile = audioFileKey ? req.files[audioFileKey] : null;
-
 
 			if (!audioFile) {
 				return res.status(400).json({ message: "No audio file uploaded for single song" });
@@ -303,8 +322,7 @@ export const handleUpload = async (req, res, next) => {
 			// Assuming frontend will send artistId for single songs:
 			const artistId = parsedSingleSongDetails.artistId; // Assuming artistId is sent for single songs
 			const artist = await Artist.findById(artistId);
-			const artistName = artist ? artist.name : 'unknown_artist'; // Changed fallback to a valid folder name
-
+			const artistName = artist ? artist.name : 'unknown_artist';
 
 			// Construct the new image public ID with the desired naming convention for single songs
 			const songTitle = parsedSingleSongDetails.title;
@@ -314,12 +332,12 @@ export const handleUpload = async (req, res, next) => {
 			// Construct the new song public ID with the desired naming convention for single songs
 			const newSongPublicId = `laterna/artists/${artistName}/${songTitle}`; // Full path as public ID
 
-			const audioUrl = await uploadToCloudinary(audioFile, null, newSongPublicId, "video"); // Pass null for folder
+			const audioUrl = await uploadToCloudinary(audioFile, null, newSongPublicId, "video");
 
 			const song = new Song({
-				title: parsedSingleSongDetails.title, // Use the original song title from singleSongDetails
-				artist: artistName, // Store artist name
-				artistId: artistId, // Store artistId
+				title: parsedSingleSongDetails.title,
+				artist: artistName,
+				artistId: artistId,
 				audioUrl,
 				imageUrl,
 				duration: 0, // TODO: Get actual duration
@@ -335,9 +353,41 @@ export const handleUpload = async (req, res, next) => {
 			return res.status(400).json({ message: "Invalid upload request: Missing album or single song details" });
 		}
 
-
 	} catch (error) {
 		console.log("Error in handleUpload", error);
+		next(error);
+	}
+};
+
+export const handleMediaUpload = async (req, res, next) => {
+	try {
+		console.log("req.files for media upload:", req.files);
+		const mediaFile = req.files?.mediaFile;
+		const { artistId, name, description } = req.body;
+
+		if (!mediaFile) {
+			return res.status(400).json({ message: "No media file uploaded" });
+		}
+		if (!artistId || !name) {
+			return res.status(400).json({ message: "Missing artist ID or media name" });
+		}
+
+		const artist = await Artist.findById(artistId);
+		const artistName = artist ? artist.name : 'unknown_artist';
+
+		const resourceType = mediaFile.mimetype.startsWith('video') ? 'video' : 'image';
+
+		const folder = `laterna/artists/${artistName}/media`;
+		const publicId = `${artistName} - ${name}`;
+
+		const mediaUrl = await uploadToCloudinary(mediaFile, folder, publicId, resourceType);
+
+		// TODO: Save media details to the database (requires a Media model)
+
+		res.status(201).json({ message: "Media uploaded successfully!", url: mediaUrl });
+
+	} catch (error) {
+		console.log("Error in handleMediaUpload", error);
 		next(error);
 	}
 };

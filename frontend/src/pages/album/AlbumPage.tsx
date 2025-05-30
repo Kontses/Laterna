@@ -8,10 +8,18 @@ import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { axiosInstance } from "@/lib/axios";
 import { FastAverageColor } from 'fast-average-color'; // Added import
+import { Artist } from "@/types"; // Εισαγωγή του τύπου Artist
+import {
+	Dialog,
+	DialogContent,
+	DialogOverlay,
+	DialogTitle,
+	DialogDescription,
+} from "@/components/ui/dialog"; // Import Dialog components
 
 const formatDuration = (seconds: number) => {
 	const minutes = Math.floor(seconds / 60);
-	const remainingSeconds = seconds % 60;
+	const remainingSeconds = Math.floor(seconds % 60); // Στρογγυλοποίηση των δευτερολέπτων
 	return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
 };
 
@@ -20,8 +28,8 @@ const AlbumPage = () => {
 	const { fetchAlbumById, currentAlbum, isLoading } = useMusicStore();
 	const { currentSong, isPlaying, playAlbum, togglePlay } = usePlayerStore();
 	const { setAlbumDescription } = useAlbumDescriptionStore(); // Get setAlbumDescription from the store
+	const [isImageViewerOpen, setIsImageViewerOpen] = useState(false); // State for image viewer
 
-	const [artistName, setArtistName] = useState<string | null>(null);
 	const [gradientColor, setGradientColor] = useState<string>("#5038a0"); // Default static color - Reverted to state
 
 	useEffect(() => {
@@ -33,17 +41,7 @@ const AlbumPage = () => {
 			setAlbumDescription(currentAlbum.description);
 		}
 
-		const fetchArtistNameAndExtractColor = async () => { // Renamed function back
-			if (currentAlbum?.artistId) {
-				try {
-					const response = await axiosInstance.get(`/artists/${currentAlbum.artistId}`);
-					setArtistName(response.data.name);
-				} catch (error) {
-					console.error("Error fetching artist name:", error);
-					setArtistName("Unknown Artist");
-				}
-			}
-
+		const extractColor = async () => { // Renamed function
 			if (currentAlbum?.imageUrl) {
 				const fac = new FastAverageColor();
 				try {
@@ -55,7 +53,7 @@ const AlbumPage = () => {
 				}
 			}
 		};
-		fetchArtistNameAndExtractColor(); // Call the renamed function
+		extractColor(); // Call the renamed function
 	}, [currentAlbum, setAlbumDescription]);
 
 
@@ -78,6 +76,10 @@ const AlbumPage = () => {
 		playAlbum(currentAlbum?.songs, index);
 	};
 
+	const openImageViewer = () => {
+		setIsImageViewerOpen(true);
+	};
+
 	return (
 		<div className='h-full'>
 			<ScrollArea className='h-full rounded-md'>
@@ -94,18 +96,21 @@ const AlbumPage = () => {
 					{/* Content */}
 					<div className='relative z-10'>
 						<div className='flex p-6 gap-6 pb-8'>
-							<img
-								src={currentAlbum?.imageUrl}
-								alt={currentAlbum?.title}
-								className='w-[240px] h-[240px] shadow-xl rounded'
-							/>
+							{/* Image container with click handler */}
+							<div onClick={openImageViewer} className="cursor-pointer">
+								<img
+									src={currentAlbum?.imageUrl}
+									alt={currentAlbum?.title}
+									className='w-[240px] h-[240px] shadow-xl rounded object-cover transition-all duration-300 hover:scale-105' // Reduced scale for less zoom
+								/>
+							</div>
 							<div className='flex flex-col justify-end'>
 								<p className='text-sm font-medium'>Album</p>
 								<h1 className='text-5xl font-bold my-4'>{currentAlbum?.title}</h1>
 								<div className='flex items-center gap-2 text-sm text-zinc-100'>
-									{currentAlbum?.artistId && (
-										<Link to={`/artists/${currentAlbum.artistId}`} className='hover:underline'>
-											<span className='font-medium text-white'>{artistName || "Unknown Artist"}</span>
+									{currentAlbum?.artistId && typeof currentAlbum.artistId === 'object' && 'name' in currentAlbum.artistId && (
+										<Link to={`/artists/${(currentAlbum.artistId as Artist)._id}`} className='hover:underline'>
+											<span className='font-medium text-white'>{(currentAlbum.artistId as Artist).name}</span>
 										</Link>
 									)}
 									<span>• {currentAlbum?.songs.length} songs</span>
@@ -114,9 +119,9 @@ const AlbumPage = () => {
 										variant="ghost"
 										size="sm"
 										onClick={() => {
-											if (currentAlbum) {
+											if (currentAlbum && currentAlbum.artistId && typeof currentAlbum.artistId === 'object' && 'name' in currentAlbum.artistId) {
 												const cloudName = 'YOUR_CLOUD_NAME'; // Replace with your Cloudinary cloud name
-												const folderPath = `laterna/artists/${artistName || "Unknown Artist"}/${currentAlbum.title}`;
+												const folderPath = `laterna/artists/${(currentAlbum.artistId as Artist).name}/${currentAlbum.title}`; // Use populated artist name
 												const zipUrl = `https://res.cloudinary.com/${cloudName}/image/list/${folderPath}/archive.zip`;
 												window.open(zipUrl, '_blank');
 											}
@@ -173,6 +178,7 @@ const AlbumPage = () => {
 												onClick={() => handlePlaySong(index)}
 												className={`grid grid-cols-[16px_5fr_60px_auto] gap-4 px-4 py-2 text-sm
                       text-zinc-400 hover:bg-white/5 rounded-md group cursor-pointer
+                      ${isCurrentSong ? 'text-white' : ''}
                       `}
 											>
 												<div className='flex items-center justify-center'>
@@ -190,10 +196,10 @@ const AlbumPage = () => {
 													<img src={song.imageUrl} alt={song.title} className='size-10' />
 
 													<div>
-														<div className={`font-medium text-white`}>{song.title}</div>
-														{song?.artistId && (
-															<Link to={`/artists/${song.artistId}`} className='hover:underline'>
-																{song.artist}
+														<div className={`font-medium ${isCurrentSong ? 'text-purple-500' : 'text-white'}`}>{song.title}</div> {/* Ensure title is white */}
+														{song?.artistId && typeof song.artistId === 'object' && 'name' in song.artistId && (
+															<Link to={`/artists/${(song.artistId as Artist)._id}`} className='hover:underline'>
+																{(song.artistId as Artist).name}
 															</Link>
 														)}
 													</div>
@@ -225,6 +231,26 @@ const AlbumPage = () => {
 					</div>
 				</div>
 			</ScrollArea>
+
+			{/* Image Viewer Modal */}
+			<Dialog open={isImageViewerOpen} onOpenChange={setIsImageViewerOpen}>
+				<DialogOverlay className="fixed inset-0 bg-black/30 z-50" />
+				<DialogContent
+					className="fixed inset-0 flex items-center justify-center w-screen h-screen bg-transparent p-0 border-none overflow-hidden"
+					aria-labelledby="dialog-title"
+					aria-describedby="dialog-description"
+				>
+					{/* Add accessible title and description (visually hidden) */}
+					<DialogTitle id="dialog-title" className="sr-only">Album Artwork Viewer</DialogTitle>
+					<DialogDescription id="dialog-description" className="sr-only">Full size view of the album artwork.</DialogDescription>
+
+					<img
+						src={currentAlbum?.imageUrl}
+						alt={currentAlbum?.title}
+						className="w-full h-full max-w-full max-h-full object-contain"
+					/>
+				</DialogContent>
+			</Dialog>
 		</div>
 	);
 };

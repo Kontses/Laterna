@@ -14,7 +14,7 @@ export interface Song {
 export interface Album {
 	_id: string;
 	title: string;
-	artistId: string;
+	artistId: string | Artist;
 	imageUrl: string;
 	releaseDate: string;
 	type: string; // e.g., "Album", "EP"
@@ -65,4 +65,14 @@ export interface Artist {
 	about: string;
 	profilePhotoUrl: string;
 	galleryImages?: string[]; // Added for gallery
+	photos?: MediaItem[]; // Added for uploaded photos
+	musicVideos?: MediaItem[]; // Added for music videos
+}
+
+export interface MediaItem {
+	_id: string;
+	url: string;
+	name?: string;
+	description?: string;
+	// Add other fields if necessary, like file type (image/video)
 }

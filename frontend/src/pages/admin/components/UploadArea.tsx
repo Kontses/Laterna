@@ -9,7 +9,7 @@ import { useAuth } from "@clerk/clerk-react"; // Import useAuth
 import { DndContext, closestCorners, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { restrictToVerticalAxis } from '@dnd-kit/modifiers'; // Import restrictToVerticalAxis
+import { restrictToVerticalAxis, restrictToParentElement } from '@dnd-kit/modifiers'; // Import restrictToVerticalAxis and restrictToParentElement
 import CryptoJS from 'crypto-js'; // Import crypto-js
 
 // Function to calculate MD5 hash of a file using crypto-js
@@ -42,7 +42,7 @@ const getAudioDuration = (file: File): Promise<number> => {
   });
 };
 
-const UploadArea = () => {
+const UploadArea = ({ artistListVersion }: { artistListVersion: number }) => {
   const [audioFiles, setAudioFiles] = useState<File[]>([]);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -73,7 +73,7 @@ const UploadArea = () => {
     };
 
     fetchArtists();
-  }, [getToken]); // Fetch artists when the component mounts or getToken changes
+  }, [getToken, artistListVersion]); // Fetch artists when the component mounts or getToken changes
 
 
   const [singleSongDetails, setSingleSongDetails] = useState({
@@ -97,6 +97,9 @@ const UploadArea = () => {
 
   const [albumSongsDetails, setAlbumSongsDetails] = useState<{ title: string, fileName: string, md5: string, duration: number }[]>([]); // Include fileName, md5, and duration
 
+  // New state for additional album files
+  const [additionalAlbumFiles, setAdditionalAlbumFiles] = useState<File[]>([]);
+
   // New state for media uploads
   const [mediaFile, setMediaFile] = useState<File | null>(null);
   const [mediaDetails, setMediaDetails] = useState({
@@ -107,6 +110,9 @@ const UploadArea = () => {
   const [isMediaDragging, setIsMediaDragging] = useState(false);
   const mediaFileInputRef = useRef<HTMLInputElement>(null);
   const [isMediaLoading, setIsMediaLoading] = useState(false);
+
+  // Create a ref for the songs list container
+  const songsListRef = useRef<HTMLUListElement>(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -120,6 +126,11 @@ const UploadArea = () => {
     })
   );
 
+  // Modifiers to restrict dragging within the container and vertically
+  const modifiers = [
+    restrictToVerticalAxis,
+    restrictToParentElement,
+  ];
 
   const handleDragOver = (event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault();
@@ -164,6 +175,11 @@ const UploadArea = () => {
 		}
 	};
 
+  // Handler for selecting additional album files
+  const handleAdditionalAlbumFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(event.target.files || []);
+    setAdditionalAlbumFiles(files);
+  };
 
   const handleSubmit = async () => {
     if (audioFiles.length === 0) {
@@ -210,6 +226,15 @@ const UploadArea = () => {
       const specificGenresArray = (albumDetails.specificGenres as any as string).split(',').map(tag => tag.trim()).filter(tag => tag !== '');
       formData.append('albumDetails', JSON.stringify({...albumDetails, specificGenres: specificGenresArray})); // Send processed specificGenres
       formData.append('albumSongsDetails', JSON.stringify(albumSongsDetails)); // albumSongsDetails will now have the correct order
+
+      // Append additional album files
+      additionalAlbumFiles.forEach((file) => {
+        formData.append('additionalAlbumFiles', file); // Use a new key, e.g., 'additionalAlbumFiles'
+      });
+
+      // Append the list of additional album file names in their current order
+      const additionalAlbumFileNames = additionalAlbumFiles.map(file => file.name);
+      formData.append('additionalAlbumFileNames', JSON.stringify(additionalAlbumFileNames));
     }
 
     try {
@@ -230,6 +255,7 @@ const UploadArea = () => {
       setSingleSongDetails({ title: "", artistId: "", releaseDate: "", generalGenre: "", specificGenres: "" as string, description: "" }); // Clear all single song fields
       setAlbumDetails({ title: "", artistId: "", releaseDate: "", generalGenre: "", specificGenres: "" as string, description: "" }); // Clear specificGenres as raw string and add description
       setAlbumSongsDetails([]);
+      setAdditionalAlbumFiles([]); // Clear additional files state
        if (fileInputRef.current) fileInputRef.current.value = "";
        if (imageInputRef.current) imageInputRef.current.value = "";
 
@@ -254,6 +280,29 @@ const UploadArea = () => {
 
         // Use arrayMove from @dnd-kit/sortable/utilities
         const arrayMove = (array: any[], oldIndex: number, newIndex: number) => {
+          const newArray = [...array];
+          const [element] = newArray.splice(oldIndex, 1);
+          newArray.splice(newIndex, 0, element);
+          return newArray;
+        };
+
+        return arrayMove(items, oldIndex, newIndex);
+      });
+    }
+  };
+
+  // New handleDragEnd for additional album files
+  const handleAdditionalFilesDragEnd = (event: any) => {
+    const { active, over } = event;
+
+    if (!over) return;
+
+    if (active.id !== over.id) {
+      setAdditionalAlbumFiles((items) => {
+        const oldIndex = items.findIndex(item => item.name === active.id); // Use file name as ID
+        const newIndex = items.findIndex(item => item.name === over.id);
+
+        const arrayMove = (array: File[], oldIndex: number, newIndex: number): File[] => {
           const newArray = [...array];
           const [element] = newArray.splice(oldIndex, 1);
           newArray.splice(newIndex, 0, element);
@@ -306,6 +355,36 @@ const UploadArea = () => {
         />
         <span className="text-zinc-400 text-sm">{song.fileName}</span> {/* Display song.fileName */}
         {/* Add edit/delete icons later */}
+      </li>
+    );
+  };
+
+  // New SortableItem component for additional album files
+  const SortableAdditionalFileItem = ({ file, index }: { file: File, index: number }) => {
+    const {
+      attributes,
+      listeners,
+      setNodeRef,
+      transform,
+      transition,
+    } = useSortable({ id: file.name }); // Use file name as the unique ID
+
+    const style = {
+      transform: CSS.Transform.toString(transform),
+      transition,
+    };
+
+    return (
+      <li
+        ref={setNodeRef}
+        style={style}
+        {...attributes}
+        {...listeners}
+        className="flex items-center space-x-2 bg-zinc-800 p-2 rounded-md cursor-grab" // Added cursor style, similar to song items
+      >
+        <span className="text-zinc-400">{index + 1}.</span>
+        <span className="text-white flex-grow">{file.name}</span> {/* Display file name */}
+        {/* Add remove icon later */}
       </li>
     );
   };
@@ -570,6 +649,58 @@ const UploadArea = () => {
                   />
                 </div>
 
+                {/* New section for additional album files */}
+                <div className="space-y-4">
+                  <h4 className="text-lg font-semibold mt-6">Additional Album Files (Photos, PDFs, etc.)</h4>
+                  <div
+                    className='flex items-center justify-center p-6 border-2 border-dashed border-zinc-700 rounded-lg cursor-pointer'
+                    onClick={() => document.getElementById('additional-album-files-input')?.click()}
+                  >
+                    <div className='text-center'>
+                      <div className='p-3 bg-zinc-800 rounded-full inline-block mb-2'>
+                        <Upload className='h-6 w-6 text-zinc-400' />
+                      </div>
+                      <div className='text-sm text-zinc-400 mb-2'>
+                        {additionalAlbumFiles.length > 0
+                          ? `${additionalAlbumFiles.length} file(s) selected`
+                          : "Drag and drop or click to select additional files"}
+                      </div>
+                      <Button variant='outline' size='sm' className='text-xs'>
+                        Choose Files
+                      </Button>
+                      <input
+                        type="file"
+                        multiple
+                        className="hidden"
+                        id="additional-album-files-input"
+                        onChange={handleAdditionalAlbumFileSelect}
+                      />
+                    </div>
+                  </div>
+                  {additionalAlbumFiles.length > 0 && (
+                    <div className="space-y-2">
+                      <p className="text-sm font-medium">Selected Files:</p>
+                      <DndContext
+                        sensors={sensors} // Use the same sensors as for songs
+                        collisionDetection={closestCorners}
+                        onDragEnd={handleAdditionalFilesDragEnd}
+                        modifiers={modifiers} // Use the same modifiers
+                      >
+                        <SortableContext
+                          items={additionalAlbumFiles.map(file => file.name)} // Use file name as the unique ID
+                          strategy={verticalListSortingStrategy}
+                        >
+                          <ul className="list-disc list-inside text-sm text-zinc-400 space-y-1">
+                            {additionalAlbumFiles.map((file, index) => (
+                              <SortableAdditionalFileItem key={file.name} file={file} index={index} />
+                            ))}
+                          </ul>
+                        </SortableContext>
+                      </DndContext>
+                    </div>
+                  )}
+                </div>
+
                 {/* Genre Section */}
                 <div className="space-y-4">
                   <h4 className="text-lg font-semibold mt-6">Genre</h4>
@@ -605,8 +736,8 @@ const UploadArea = () => {
                   <div className='space-y-2'>
                     <label className='text-sm font-medium'>Specific Genre (comma-separated tags)</label>
                     <Input
-                      value={albumDetails.specificGenres as any as string} // Use raw string value for input
-                      onChange={(e) => setAlbumDetails({ ...albumDetails, specificGenres: e.target.value })} // Update state with raw string
+                      value={albumDetails.specificGenres as any as string}
+                      onChange={(e) => setAlbumDetails({ ...albumDetails, specificGenres: e.target.value })}
                       className='bg-zinc-800 border-zinc-700'
                       placeholder='e.g., Indie Rock, Psychedelic, Garage'
                     />
@@ -623,15 +754,15 @@ const UploadArea = () => {
                   sensors={sensors}
                   collisionDetection={closestCorners}
                   onDragEnd={handleDragEnd}
-                  modifiers={[restrictToVerticalAxis]} // Add the modifier here
+                  modifiers={modifiers}
                 >
                   <SortableContext
-                    items={albumSongsDetails.map(song => song.title)} // Use song titles as unique IDs
+                    items={albumSongsDetails.map(song => song.title)}
                     strategy={verticalListSortingStrategy}
                   >
-                    <ul className="space-y-2">
+                    <ul ref={songsListRef} className="space-y-2">
                       {albumSongsDetails.map((song, index) => (
-                        <SortableItem key={song.title} song={song} index={index} /> // Use SortableItem component
+                        <SortableItem key={song.title} song={song} index={index} />
                       ))}
                     </ul>
                   </SortableContext>
@@ -646,8 +777,8 @@ const UploadArea = () => {
         </div>
       )}
 
-      {/* 3. Add Music Videos or Photos Section */}
-      <h3 className="text-lg font-semibold text-white mt-8">3. Add Music Videos or Photos</h3>
+      {/* 3. Add Music Videos or Gallery Photos Section */}
+      <h3 className="text-lg font-semibold text-white mt-8">3. Add Music Videos or Gallery Photos</h3>
        <div
         className={`border-2 border-dashed rounded-lg p-6 text-center ${
           isMediaDragging ? 'border-blue-500 bg-blue-900/20' : 'border-zinc-700 bg-zinc-800/50'

@@ -3,6 +3,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { useMusicStore } from "@/stores/useMusicStore";
 import { Calendar, Music, Trash2 } from "lucide-react";
 import { useEffect } from "react";
+import { Artist } from "@/types";
 
 const AlbumsTable = () => {
 	const { albums, deleteAlbum, fetchAlbums } = useMusicStore();
@@ -30,11 +31,11 @@ const AlbumsTable = () => {
 							<img src={album.imageUrl} alt={album.title} className='w-10 h-10 rounded object-cover' />
 						</TableCell>
 						<TableCell className='font-medium'>{album.title}</TableCell>
-						<TableCell>{album.artistId} {/* TODO: Fetch artist name based on artistId */}</TableCell>
+						<TableCell>{album.artistId && typeof album.artistId === 'object' ? (album.artistId as Artist).name : "Unknown Artist"} {/* Use populated artist name, add check for object type and cast */}</TableCell>
 						<TableCell>
 							<span className='inline-flex items-center gap-1 text-zinc-400'>
 								<Calendar className='h-4 w-4' />
-								{new Date(album.releaseDate).toLocaleDateString()} {/* Display and format releaseDate */}
+								{album.releaseDate && new Date(album.releaseDate).toLocaleDateString()} {/* Display and format releaseDate */}
 							</span>
 						</TableCell>
 						<TableCell>

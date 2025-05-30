@@ -19,7 +19,7 @@ const AlbumDescriptionPanel: React.FC<AlbumDescriptionPanelProps> = ({ descripti
         </div>
       </div>
       <ScrollArea className="flex-1 p-4"> {/* Adjusted ScrollArea to take remaining height and added padding */}
-        <div className={`text-sm text-zinc-400 ${!isExpanded ? 'max-h-40 overflow-hidden' : ''}`}> {/* Adjust max-h as needed */}
+        <div className={`text-sm text-zinc-400 ${!isExpanded ? '' : ''}`}> {/* Remove max-h-40 overflow-hidden */}
           <span dangerouslySetInnerHTML={{ __html: description.replace(/\n/g, '<br>') }} />
         </div>
         {description.length > 200 && ( // Assuming 200 characters is the threshold for "read more"

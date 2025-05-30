@@ -11,6 +11,8 @@ const albumSchema = new mongoose.Schema(
 		specificGenres: [{ type: String }], // Added specificGenres as an array of strings
 		description: { type: String }, // Added description field
 		songs: [{ type: mongoose.Schema.Types.ObjectId, ref: "Song" }],
+		// New field for additional files
+		additionalFiles: [{ type: String }], // Array of strings for file URLs or public IDs
 	},
 	{ timestamps: true }
 ); //  createdAt, updatedAt

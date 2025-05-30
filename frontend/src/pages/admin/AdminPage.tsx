@@ -10,6 +10,7 @@ import { useMusicStore } from "@/stores/useMusicStore";
 const AdminPage = () => {
 	const { isAdmin, isLoading } = useAuthStore();
 	const [showAddArtistForm, setShowAddArtistForm] = useState(false); // State to control form visibility
+	const [artistListVersion, setArtistListVersion] = useState(0); // New state for artist list version
 
 	const { fetchAlbums, fetchSongs, fetchStats, fetchArtists } = useMusicStore(); // Destructure fetchArtists
 
@@ -17,8 +18,8 @@ const AdminPage = () => {
 		fetchAlbums();
 		fetchSongs();
 		fetchStats();
-		fetchArtists(); // Fetch artists on component mount
-	}, [fetchAlbums, fetchSongs, fetchStats, fetchArtists]);
+		// fetchArtists(); // Initial fetch is now handled by UploadArea's useEffect
+	}, [fetchAlbums, fetchSongs, fetchStats]);
 
 	if (!isAdmin && !isLoading) return <div>Unauthorized</div>;
 
@@ -45,16 +46,16 @@ const AdminPage = () => {
 				{showAddArtistForm && (
 					<AddArtistForm
 						onArtistAdded={() => {
-							fetchArtists(); // Refresh artist list after adding a new artist
-							setShowAddArtistForm(false); // Hide form after adding
+							setArtistListVersion(prev => prev + 1); // Increment state to trigger UploadArea refetch
+							setShowAddArtistForm(false);
 						}}
 						onCancel={() => setShowAddArtistForm(false)} // Hide form on cancel
 					/>
 				)}
 			</div>
 
-			{/* Replace Tabs with UploadArea */}
-			<UploadArea />
+			{/* Pass artistListVersion to UploadArea */}
+			<UploadArea artistListVersion={artistListVersion} />
 		</div>
 	);
 };
