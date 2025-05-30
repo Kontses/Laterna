@@ -90,11 +90,6 @@ const ArtistPage: React.FC = () => {
     setIsVideoModalOpen(true);
   };
 
-  const closeVideoModal = () => {
-    setCurrentVideoUrl(null);
-    setIsVideoModalOpen(false);
-  };
-
   const goToNextImage = () => {
     if (artist) {
       const allImages = [...(artist.photos || [])]; // Combine profile photo and gallery images
