@@ -1,4 +1,3 @@
-import React from 'react';
 import { usePlayerStore } from '@/stores/usePlayerStore'; // Import the player store
 import { X, ListMusic } from 'lucide-react'; // Import the X and ListMusic icons
 import { DndContext, closestCorners, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core'; // Import Dnd kit components and hooks

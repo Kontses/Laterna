@@ -1,11 +1,9 @@
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { usePlayerStore } from "@/stores/usePlayerStore";
-import { useAlbumDescriptionStore } from "@/stores/useAlbumDescriptionStore"; // Import the store
 import { Laptop2, ListMusic, Mic2, Pause, Play, Repeat, Shuffle, SkipBack, SkipForward, Volume1, Info, Users } from "lucide-react"; // Import Users and Laptop2 icons
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { useQueueStore } from "@/stores/useQueueStore"; // Import the new store
 
 const formatTime = (seconds: number) => {
 	const minutes = Math.floor(seconds / 60);
