@@ -2,9 +2,10 @@ import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { usePlayerStore } from "@/stores/usePlayerStore";
 import { useAlbumDescriptionStore } from "@/stores/useAlbumDescriptionStore"; // Import the store
-import { Laptop2, ListMusic, Mic2, Pause, Play, Repeat, Shuffle, SkipBack, SkipForward, Volume1, Info } from "lucide-react"; // Import Info icon
+import { Laptop2, ListMusic, Mic2, Pause, Play, Repeat, Shuffle, SkipBack, SkipForward, Volume1, Info, Users } from "lucide-react"; // Import Users and Laptop2 icons
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
+import { useQueueStore } from "@/stores/useQueueStore"; // Import the new store
 
 const formatTime = (seconds: number) => {
 	const minutes = Math.floor(seconds / 60);
@@ -12,9 +13,16 @@ const formatTime = (seconds: number) => {
 	return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
 };
 
-export const PlaybackControls = () => {
+interface PlaybackControlsProps {
+	onToggleQueue: () => void;
+	onToggleAlbumDescription: () => void;
+	onToggleFriendsActivity: () => void;
+}
+
+export const PlaybackControls = ({ onToggleQueue, onToggleAlbumDescription, onToggleFriendsActivity }: PlaybackControlsProps) => {
 	const { currentSong, isPlaying, togglePlay, playNext, playPrevious } = usePlayerStore();
 	const { toggleAlbumDescription } = useAlbumDescriptionStore(); // Get toggle function from the store
+	const { toggleQueue } = useQueueStore(); // Get toggle function from the queue store
 
 	const [volume, setVolume] = useState(75);
 	const [prevVolume, setPrevVolume] = useState(75); // New state to store previous volume
@@ -170,26 +178,36 @@ export const PlaybackControls = () => {
 						<div className='text-xs text-zinc-400'>{formatTime(duration)}</div>
 					</div>
 				</div>
-				{/* volume controls */}
+				{/* volume controls and right-side icons */}
 				<div className='hidden sm:flex items-center gap-4 min-w-[180px] w-[30%] justify-end'>
+					{/* Microphone button */}
 					<Button size='icon' variant='ghost' className='hover:text-white text-zinc-400'>
 						<Mic2 className='h-4 w-4' />
 					</Button>
-					<Button size='icon' variant='ghost' className='hover:text-white text-zinc-400'>
+
+					{/* Playback Queue button */}
+					<Button size='icon' variant='ghost' className='hover:text-white text-zinc-400' onClick={onToggleQueue}>
 						<ListMusic className='h-4 w-4' />
 					</Button>
-					<Button size='icon' variant='ghost' className='hover:text-white text-zinc-400'>
-						<Laptop2 className='h-4 w-4' />
-					</Button>
 
-					{/* Info button */}
+					{/* Album Description (Info) button */}
 					<Button
 						size='icon'
 						variant='ghost'
 						className='hover:text-white text-zinc-400'
-						onClick={() => toggleAlbumDescription()} // Call toggle function from the store
+						onClick={onToggleAlbumDescription}
 					>
 						<Info className='h-4 w-4' />
+					</Button>
+
+					{/* Connect to device button */}
+					<Button size='icon' variant='ghost' className='hover:text-white text-zinc-400'>
+						<Laptop2 className='h-4 w-4' />
+					</Button>
+
+					{/* Friends Activity button */}
+					<Button size='icon' variant='ghost' className='hover:text-white text-zinc-400' onClick={onToggleFriendsActivity}>
+						<Users className='h-4 w-4' />
 					</Button>
 
 					<div

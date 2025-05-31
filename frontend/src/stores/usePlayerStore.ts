@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { Song } from "@/types";
 import { useChatStore } from "./useChatStore";
+import { arrayMove } from '@dnd-kit/sortable'; // Import arrayMove from dnd-kit
 
 interface PlayerStore {
 	currentSong: Song | null;
@@ -16,6 +17,9 @@ interface PlayerStore {
 	playNext: () => void;
 	playPrevious: () => void;
 	setAudioElement: (audio: HTMLAudioElement | null) => void; // New function to set audio element
+	addSongToQueue: (song: Song) => void; // Add new function to interface
+	removeSongFromQueue: (songId: string) => void; // Add new function to interface
+	reorderQueue: (oldIndex: number, newIndex: number) => void; // Add new function for reordering
 }
 
 export const usePlayerStore = create<PlayerStore>((set, get) => ({
@@ -195,5 +199,32 @@ export const usePlayerStore = create<PlayerStore>((set, get) => ({
 	},
 	setAudioElement: (audio: HTMLAudioElement | null) => {
 		set({ audioElement: audio });
+	},
+	addSongToQueue: (song: Song) => {
+		set((state) => ({
+			queue: [...state.queue, song],
+		}));
+	},
+	removeSongFromQueue: (songId: string) => {
+		set((state) => ({
+			queue: state.queue.filter((song) => song._id !== songId),
+			currentIndex: state.queue[state.currentIndex]?._id === songId
+				? -1 // Reset index if current song is removed
+				: state.currentIndex > state.queue.findIndex((song) => song._id === songId) && state.currentIndex !== -1
+					? state.currentIndex - 1 // Decrement index if removing a song before the current one
+					: state.currentIndex,
+			currentSong: state.queue[state.currentIndex]?._id === songId ? null : state.currentSong,
+		}));
+	},
+	reorderQueue: (oldIndex: number, newIndex: number) => {
+		set((state) => {
+			const newQueue = arrayMove(state.queue, oldIndex, newIndex);
+			// Adjust current index if the current song was moved
+			const newCurrentIndex = newQueue.findIndex(song => song._id === state.currentSong?._id);
+			return {
+				queue: newQueue,
+				currentIndex: newCurrentIndex !== -1 ? newCurrentIndex : state.currentIndex,
+			};
+		});
 	},
 }));

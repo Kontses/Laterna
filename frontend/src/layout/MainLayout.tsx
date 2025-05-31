@@ -8,10 +8,16 @@ import { useEffect, useState } from "react";
 import AlbumDescriptionPanel from "./components/AlbumDescriptionPanel"; // Import the new component
 import { useAlbumDescriptionStore } from "@/stores/useAlbumDescriptionStore"; // Import the store
 import Topbar from "@/components/Topbar"; // Import Topbar
+import { useQueueStore } from "@/stores/useQueueStore"; // Import the queue store
+import Queue from "@/components/Queue"; // Import the Queue component
 
 const MainLayout = () => {
 	const [isMobile, setIsMobile] = useState(false);
-	const { showAlbumDescription, albumDescription } = useAlbumDescriptionStore(); // Use state from the store
+	const { showAlbumDescription, albumDescription, toggleAlbumDescription } = useAlbumDescriptionStore(); // Get toggle function
+	const { showQueue, toggleQueue } = useQueueStore(); // Get toggle function
+
+	// New state to manage active right panel
+	const [activeRightPanel, setActiveRightPanel] = useState<'queue' | 'albumDescription' | 'friendsActivity'>('friendsActivity');
 
 	useEffect(() => {
 		const checkMobile = () => {
@@ -22,6 +28,18 @@ const MainLayout = () => {
 		window.addEventListener("resize", checkMobile);
 		return () => window.removeEventListener("resize", checkMobile);
 	}, []);
+
+	// Effect to update active panel based on store states
+	useEffect(() => {
+		if (showQueue) {
+			setActiveRightPanel('queue');
+		} else if (showAlbumDescription) {
+			setActiveRightPanel('albumDescription');
+		} else {
+			setActiveRightPanel('friendsActivity');
+		}
+	}, [showQueue, showAlbumDescription]);
+
 
 	return (
 		<div className='h-screen bg-black text-white flex flex-col'>
@@ -44,9 +62,12 @@ const MainLayout = () => {
 					<>
 						<ResizableHandle className='w-2 bg-black rounded-lg transition-colors' />
 
-						{/* right sidebar */}
-						<ResizablePanel defaultSize={showAlbumDescription ? 25 : 20} minSize={0} maxSize={showAlbumDescription ? 30 : 25} collapsedSize={0}>
-							{showAlbumDescription && albumDescription ? (
+						{/* right sidebar - includes Queue, Album Description, Friends Activity */}
+						<ResizablePanel defaultSize={activeRightPanel !== 'friendsActivity' ? 25 : 20} minSize={0} maxSize={activeRightPanel !== 'friendsActivity' ? 30 : 25} collapsedSize={0}>
+							{/* Conditional Rendering for Right Panel Content based on activeRightPanel */}
+							{activeRightPanel === 'queue' ? (
+								<Queue />
+							) : activeRightPanel === 'albumDescription' && albumDescription ? (
 								<AlbumDescriptionPanel description={albumDescription} />
 							) : (
 								<FriendsActivity />
@@ -56,8 +77,12 @@ const MainLayout = () => {
 				)}
 			</ResizablePanelGroup>
 
-			{/* PlaybackControls will get toggle function from the store */}
-			<PlaybackControls />
+			{/* Pass callbacks to PlaybackControls and AlbumDescriptionPanel to control activeRightPanel */}
+			<PlaybackControls 
+				onToggleQueue={() => setActiveRightPanel(prev => prev === 'queue' ? 'friendsActivity' : 'queue')} 
+				onToggleAlbumDescription={() => setActiveRightPanel(prev => prev === 'albumDescription' ? 'friendsActivity' : 'albumDescription')} 
+				onToggleFriendsActivity={() => setActiveRightPanel(prev => prev === 'friendsActivity' ? 'friendsActivity' : 'friendsActivity')} // Callback for Friends Activity
+			/>
 		</div>
 	);
 };
