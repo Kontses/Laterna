@@ -21,8 +21,6 @@ interface PlaybackControlsProps {
 
 export const PlaybackControls = ({ onToggleQueue, onToggleAlbumDescription, onToggleFriendsActivity }: PlaybackControlsProps) => {
 	const { currentSong, isPlaying, togglePlay, playNext, playPrevious } = usePlayerStore();
-	const { toggleAlbumDescription } = useAlbumDescriptionStore(); // Get toggle function from the store
-	const { toggleQueue } = useQueueStore(); // Get toggle function from the queue store
 
 	const [volume, setVolume] = useState(75);
 	const [prevVolume, setPrevVolume] = useState(75); // New state to store previous volume

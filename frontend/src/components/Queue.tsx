@@ -2,13 +2,13 @@ import React from 'react';
 import { usePlayerStore } from '@/stores/usePlayerStore'; // Import the player store
 import { X, ListMusic } from 'lucide-react'; // Import the X and ListMusic icons
 import { DndContext, closestCorners, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core'; // Import Dnd kit components and hooks
-import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable'; // Import sortable components and hooks, including strategy
+import { SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable'; // Import sortable components and hooks, including strategy
 import { CSS } from '@dnd-kit/utilities'; // Import CSS utility
 import { ScrollArea } from "@/components/ui/scroll-area"; // Import ScrollArea
 
 // Component for each individual sortable song item
 const SortableSongItem = ({ song }: { song: any }) => {
-  const { queue, setCurrentSong, removeSongFromQueue, currentSong } = usePlayerStore();
+  const { setCurrentSong, removeSongFromQueue, currentSong } = usePlayerStore();
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: song._id });
 
   const style = {
@@ -29,7 +29,7 @@ const SortableSongItem = ({ song }: { song: any }) => {
       {...attributes}
       {...listeners}
       className={`flex items-center justify-between p-2 rounded-md cursor-pointer ${currentSong?._id === song._id ? 'bg-zinc-700' : 'hover:bg-zinc-800'} ${isDragging ? 'opacity-50' : ''}`}
-      onClick={(e) => {
+      onClick={() => {
         if (!isDragging) {
           setCurrentSong(song);
         }

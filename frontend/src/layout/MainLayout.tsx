@@ -13,8 +13,8 @@ import Queue from "@/components/Queue"; // Import the Queue component
 
 const MainLayout = () => {
 	const [isMobile, setIsMobile] = useState(false);
-	const { showAlbumDescription, albumDescription, toggleAlbumDescription } = useAlbumDescriptionStore(); // Get toggle function
-	const { showQueue, toggleQueue } = useQueueStore(); // Get toggle function
+	const { showAlbumDescription, albumDescription } = useAlbumDescriptionStore(); // Get toggle function
+	const { showQueue } = useQueueStore(); // Get toggle function
 
 	// New state to manage active right panel
 	const [activeRightPanel, setActiveRightPanel] = useState<'queue' | 'albumDescription' | 'friendsActivity'>('friendsActivity');
