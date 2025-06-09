@@ -7,17 +7,22 @@ import { usePlayerStore } from "@/stores/usePlayerStore";
 import { useUser } from "@clerk/clerk-react";
 import { useRecentPlaysStore } from "@/stores/useRecentPlaysStore";
 import RecentPlaysGrid from "./components/RecentPlaysGrid"; // Import RecentPlaysGrid
+import ArtistGrid from "./components/ArtistGrid"; // Import ArtistGrid
+import AlbumGrid from "./components/AlbumGrid"; // Import AlbumGrid
 
 const HomePage = () => {
 	const {
 		isLoading,
-		madeForYouSongs,
 		featuredSongs,
 		trendingSongs,
+		artists,
+		fetchArtists,
+		albums, // Add albums
+		fetchAlbums, // Add fetchAlbums
 	} = useMusicStore();
 
 	const { initializeQueue } = usePlayerStore();
-	const { user } = useUser();
+	const { user, isLoaded, isSignedIn } = useUser();
 	const [greeting, setGreeting] = useState("");
 	const [greetingEmoji, setGreetingEmoji] = useState<string>("");
 
@@ -41,15 +46,39 @@ const HomePage = () => {
 	}, []);
 
 	useEffect(() => {
-		fetchRecentPlays();
-	}, [fetchRecentPlays]);
+		if (isLoaded && isSignedIn) {
+			fetchRecentPlays();
+		}
+	}, [fetchRecentPlays, isLoaded, isSignedIn]);
 
 	useEffect(() => {
-		if (madeForYouSongs.length > 0 && featuredSongs.length > 0 && trendingSongs.length > 0) {
-			const allSongs = [...featuredSongs, ...madeForYouSongs, ...trendingSongs];
+		if (isLoaded && isSignedIn) {
+			fetchArtists();
+		}
+	}, [fetchArtists, isLoaded, isSignedIn]);
+
+	useEffect(() => {
+		if (isLoaded && isSignedIn) {
+			fetchAlbums(); // Fetch albums
+		}
+	}, [fetchAlbums, isLoaded, isSignedIn]);
+
+	// Sort artists by _id (assuming _id contains a timestamp for creation order)
+	const sortedArtists = [...artists].sort((a, b) => b._id.localeCompare(a._id));
+
+	// Sort albums by releaseDate (most recent first)
+	const sortedAlbums = [...albums].sort((a, b) => {
+		const dateA = new Date(a.releaseDate).getTime();
+		const dateB = new Date(b.releaseDate).getTime();
+		return dateB - dateA;
+	});
+
+	useEffect(() => {
+		if (featuredSongs.length > 0 && trendingSongs.length > 0) {
+			const allSongs = [...featuredSongs, ...trendingSongs];
 			initializeQueue(allSongs);
 		}
-	}, [initializeQueue, madeForYouSongs, trendingSongs, featuredSongs]);
+	}, [initializeQueue, trendingSongs, featuredSongs]);
 
 	return (
 		<main className='rounded-md overflow-hidden h-full bg-gradient-to-b from-zinc-800 to-zinc-900'>
@@ -66,8 +95,8 @@ const HomePage = () => {
 					<FeaturedSection />
 
 					<div className='space-y-8'>
-						<SectionGrid title='New Artists' songs={madeForYouSongs} isLoading={isLoading} />
-						<SectionGrid title='New Albums' songs={trendingSongs} isLoading={isLoading} />
+						<ArtistGrid title='New Artists' artists={sortedArtists} isLoading={isLoading} />
+						<AlbumGrid title='New Albums' albums={sortedAlbums} isLoading={isLoading} />
 					</div>
 				</div>
 			</ScrollArea>
