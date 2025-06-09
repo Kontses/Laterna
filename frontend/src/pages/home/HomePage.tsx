@@ -95,8 +95,18 @@ const HomePage = () => {
 					<FeaturedSection />
 
 					<div className='space-y-8'>
-						<ArtistGrid title='New Artists' artists={sortedArtists} isLoading={isLoading} />
-						<AlbumGrid title='New Albums' albums={sortedAlbums} isLoading={isLoading} />
+						<AlbumGrid
+							title='New Albums'
+							albums={sortedAlbums}
+							isLoading={isLoading}
+							showAllLink={{ to: '/library', state: { viewMode: 'albums', sortOption: 'newest' } }}
+						/>
+						<ArtistGrid
+							title='New Artists'
+							artists={sortedArtists}
+							isLoading={isLoading}
+							showAllLink={{ to: '/library', state: { viewMode: 'artists', sortOption: 'newest' } }}
+						/>
 					</div>
 				</div>
 			</ScrollArea>

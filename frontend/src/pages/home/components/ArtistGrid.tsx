@@ -4,21 +4,26 @@ import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 
 type ArtistGridProps = {
-	title: string;
+	title?: string;
 	artists: Artist[];
 	isLoading: boolean;
+	showAllLink?: { to: string; state: { viewMode: "artists" | "albums"; sortOption: "newest" | "oldest" | "alphabetical" } };
 };
 
-const ArtistGrid = ({ artists, title, isLoading }: ArtistGridProps) => {
+const ArtistGrid = ({ artists, title, isLoading, showAllLink }: ArtistGridProps) => {
 	if (isLoading) return <SectionGridSkeleton />;
 
 	return (
 		<div className='mb-8'>
 			<div className='flex items-center justify-between mb-4'>
-				<h2 className='text-xl sm:text-2xl font-bold'>{title}</h2>
-				<Button variant='link' className='text-sm text-zinc-400 hover:text-white'>
-					Show all
-				</Button>
+				{title && <h2 className='text-xl sm:text-2xl font-bold'>{title}</h2>}
+				{showAllLink && (
+					<Link to={showAllLink.to} state={showAllLink.state}>
+						<Button variant='link' className='text-sm text-zinc-400 hover:text-white'>
+							Show all
+						</Button>
+					</Link>
+				)}
 			</div>
 
 			<div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4'>

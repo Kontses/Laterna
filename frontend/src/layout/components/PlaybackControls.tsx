@@ -1,9 +1,18 @@
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { usePlayerStore } from "@/stores/usePlayerStore";
-import { Laptop2, ListMusic, Mic2, Pause, Play, Repeat, Shuffle, SkipBack, SkipForward, Volume1, Info, Users } from "lucide-react"; // Import Users and Laptop2 icons
+import { Laptop2, ListMusic, Mic2, Pause, Play, Repeat, Shuffle, SkipBack, SkipForward, Volume1, Info, Users, Settings } from "lucide-react"; // Re-import Shuffle, SkipBack, SkipForward, Repeat
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
+import toast from "react-hot-toast"; // Import toast
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select"; // Import Select components
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden"; // Correct import for VisuallyHidden
 
 const formatTime = (seconds: number) => {
 	const minutes = Math.floor(seconds / 60);
@@ -25,6 +34,7 @@ export const PlaybackControls = ({ onToggleQueue, onToggleAlbumDescription, onTo
 	const [currentTime, setCurrentTime] = useState(0);
 	const [duration, setDuration] = useState(0);
 	const audioRef = useRef<HTMLAudioElement | null>(null);
+	const [streamingQuality, setStreamingQuality] = useState("good"); // Default to "good"
 
 	useEffect(() => {
 		// Get the audio element from the store
@@ -205,6 +215,28 @@ export const PlaybackControls = ({ onToggleQueue, onToggleAlbumDescription, onTo
 					<Button size='icon' variant='ghost' className='hover:text-white text-zinc-400' onClick={onToggleFriendsActivity}>
 						<Users className='h-4 w-4' />
 					</Button>
+
+					{/* Streaming Quality Selector */}
+					<Select onValueChange={(value) => {
+						if (value === "bad") {
+							toast.error("At Laterna we don't play music in bad quality!");
+						} else {
+							setStreamingQuality(value);
+						}
+					}} defaultValue={streamingQuality}>
+						<SelectTrigger className="w-[40px] h-8 p-0 border-none bg-transparent focus:ring-0 focus:ring-offset-0 data-[state=open]:bg-zinc-800">
+							<Settings className='h-4 w-4 text-zinc-400 hover:text-white transition-colors' />
+							<VisuallyHidden>
+								<SelectValue placeholder="Quality" />
+							</VisuallyHidden>
+						</SelectTrigger>
+						<SelectContent>
+							<SelectItem value="original">Original</SelectItem>
+							<SelectItem value="good">Good (320kbps)</SelectItem>
+							<SelectItem value="medium">Medium (192kbps)</SelectItem>
+							<SelectItem value="bad">Bad</SelectItem>
+						</SelectContent>
+					</Select>
 
 					<div
 						className='flex items-center gap-2'

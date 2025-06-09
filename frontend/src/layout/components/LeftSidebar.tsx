@@ -51,6 +51,18 @@ const LeftSidebar = () => {
 							<span className='hidden md:inline'>Messages</span>
 						</Link>
 					</SignedIn>
+					<Link
+						to={"/library"}
+						className={cn(
+							buttonVariants({
+								variant: "ghost",
+								className: "w-full justify-start text-white hover:bg-zinc-800",
+							})
+						)}
+					>
+						<Library className='mr-2 size-5' />
+						<span className='hidden md:inline'>Library</span>
+					</Link>
 				</div>
 			</div>
 
