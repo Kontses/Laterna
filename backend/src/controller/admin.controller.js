@@ -189,8 +189,8 @@ export const handleUpload = async (req, res, next) => {
 			}
 
 			const artist = await Artist.findById(parsedAlbumDetails.artistId);
-			const artistName = artist ? artist.name : 'unknown_artist';
-			const albumTitle = parsedAlbumDetails.title;
+			const artistName = artist ? artist.name.trim() : 'unknown_artist';
+			const albumTitle = parsedAlbumDetails.title.trim();
 
 			// Construct the base folder path for the album
 			const albumFolderPath = `laterna/artists/${artistName}/${albumTitle}`;

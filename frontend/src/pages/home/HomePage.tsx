@@ -97,13 +97,13 @@ const HomePage = () => {
 					<div className='space-y-8'>
 						<AlbumGrid
 							title='New Albums'
-							albums={sortedAlbums}
+							albums={sortedAlbums.slice(0, 4)}
 							isLoading={isLoading}
 							showAllLink={{ to: '/library', state: { viewMode: 'albums', sortOption: 'newest' } }}
 						/>
 						<ArtistGrid
 							title='New Artists'
-							artists={sortedArtists}
+							artists={sortedArtists.slice(0, 4)}
 							isLoading={isLoading}
 							showAllLink={{ to: '/library', state: { viewMode: 'artists', sortOption: 'newest' } }}
 						/>
