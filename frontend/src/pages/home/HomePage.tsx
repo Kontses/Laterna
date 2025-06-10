@@ -51,10 +51,10 @@ const HomePage = () => {
 	}, [fetchRecentPlays, isLoaded, isSignedIn]);
 
 	useEffect(() => {
-		if (isLoaded && isSignedIn) {
+		if (isLoaded) {
 			fetchArtists();
 		}
-	}, [fetchArtists, isLoaded, isSignedIn]);
+	}, [fetchArtists, isLoaded]);
 
 	useEffect(() => {
 		if (isLoaded && isSignedIn) {
