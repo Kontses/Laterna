@@ -57,12 +57,7 @@ const UploadArea = ({ artistListVersion }: { artistListVersion: number }) => {
   useEffect(() => {
     const fetchArtists = async () => {
       try {
-        const token = await getToken();
-        const response = await axiosInstance.get("/admin/artists", {
-          headers: {
-            "Authorization": `Bearer ${token}`,
-          },
-        });
+        const response = await axiosInstance.get("/api/artists");
         setArtists(response.data);
       } catch (error) {
         console.error("Error fetching artists:", error);
@@ -73,7 +68,7 @@ const UploadArea = ({ artistListVersion }: { artistListVersion: number }) => {
     };
 
     fetchArtists();
-  }, [getToken, artistListVersion]); // Fetch artists when the component mounts or getToken changes
+  }, [artistListVersion]); // Fetch artists when the component mounts or getToken changes
 
 
   const [singleSongDetails, setSingleSongDetails] = useState({

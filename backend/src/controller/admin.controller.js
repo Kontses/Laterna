@@ -22,16 +22,6 @@ const uploadToCloudinary = async (file, folder, publicId = null, resourceType = 
 
 import { Artist } from "../models/artist.model.js"; // Import Artist model
 
-export const getAllArtists = async (req, res, next) => {
-	try {
-		const artists = await Artist.find();
-		res.status(200).json(artists);
-	} catch (error) {
-		console.error("Error fetching artists:", error);
-		next(error);
-	}
-};
-
 export const createArtist = async (req, res, next) => {
 	try {
 		const { name, about } = req.body;

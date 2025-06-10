@@ -75,3 +75,13 @@ export const toggleFollow = async (req, res) => {
     res.status(500).json({ message: "Failed to toggle follow status" });
   }
 };
+
+export const getAllArtists = async (req, res, next) => {
+	try {
+		const artists = await Artist.find();
+		res.status(200).json(artists);
+	} catch (error) {
+		console.error("Error fetching artists:", error);
+		next(error);
+	}
+};

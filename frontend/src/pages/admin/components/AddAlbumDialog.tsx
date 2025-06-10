@@ -44,7 +44,7 @@ const AddAlbumDialog = () => {
 	useEffect(() => {
 		const fetchArtists = async () => {
 			try {
-				const response = await axiosInstance.get("/admin/artists");
+				const response = await axiosInstance.get("/api/artists");
 				setArtists(response.data);
 			} catch (error) {
 				console.error("Error fetching artists:", error);

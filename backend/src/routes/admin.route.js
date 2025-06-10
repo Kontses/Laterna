@@ -1,12 +1,11 @@
 import { Router } from "express";
-import { checkAdmin, createAlbum, createSong, deleteAlbum, deleteSong, handleUpload, createArtist, getAllArtists, handleMediaUpload } from "../controller/admin.controller.js"; // Import handleMediaUpload
+import { checkAdmin, createAlbum, createSong, deleteAlbum, deleteSong, handleUpload, createArtist, handleMediaUpload } from "../controller/admin.controller.js"; // Import handleMediaUpload
 import { protectRoute, requireAdmin } from "../middleware/auth.middleware.js";
 
 const router = Router();
 
 router.use(protectRoute, requireAdmin);
 
-router.get("/artists", getAllArtists); // Moved route to get all artists
 router.get("/check", checkAdmin);
 
 router.post("/songs", createSong);
