@@ -2,7 +2,6 @@ import { useMusicStore } from "@/stores/useMusicStore";
 import { useEffect, useState } from "react";
 import FeaturedSection from "./components/FeaturedSection";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import SectionGrid from "./components/SectionGrid";
 import { usePlayerStore } from "@/stores/usePlayerStore";
 import { useUser } from "@clerk/clerk-react";
 import { useRecentPlaysStore } from "@/stores/useRecentPlaysStore";
