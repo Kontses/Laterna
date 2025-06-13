@@ -25,7 +25,7 @@ const UsersList = () => {
 									<div className='relative'>
 										<Avatar className='size-8 md:size-12'>
 											<AvatarImage src={user.imageUrl} />
-											<AvatarFallback>{user.fullName[0]}</AvatarFallback>
+											<AvatarFallback>{user.nickname[0]}</AvatarFallback>
 										</Avatar>
 										{/* online indicator */}
 										<div
@@ -35,7 +35,7 @@ const UsersList = () => {
 									</div>
 
 									<div className='flex-1 min-w-0 lg:block hidden'>
-										<span className='font-medium truncate'>{user.fullName}</span>
+										<span className='font-medium truncate'>{user.nickname}</span>
 									</div>
 								</div>
 							))
