@@ -1,5 +1,5 @@
 import { useMusicStore } from "@/stores/useMusicStore";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import FeaturedSection from "./components/FeaturedSection";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { usePlayerStore } from "@/stores/usePlayerStore";
@@ -8,6 +8,7 @@ import RecentPlaysGrid from "./components/RecentPlaysGrid"; // Import RecentPlay
 import ArtistGrid from "./components/ArtistGrid"; // Import ArtistGrid
 import AlbumGrid from "./components/AlbumGrid"; // Import AlbumGrid
 import { useAuth } from "@/providers/AuthProvider"; // Import useAuth
+import { FastAverageColor } from 'fast-average-color';
 
 const HomePage = () => {
 	const {
@@ -24,8 +25,27 @@ const HomePage = () => {
 	const { user } = useAuth(); // Use custom useAuth hook
 	const [greeting, setGreeting] = useState("");
 	const [greetingEmoji, setGreetingEmoji] = useState<string>("");
+	const [gradientColor, setGradientColor] = useState<string>("rgb(24,24,27)"); // Default gradient color
 
 	const { recentPlays, fetchRecentPlays, isLoading: isRecentPlaysLoading } = useRecentPlaysStore();
+
+	const fac = new FastAverageColor();
+
+	const defaultGradient = "bg-gradient-to-b from-zinc-700 to-zinc-800";
+
+	const handleImageHover = useCallback(async (imageUrl: string | null) => {
+		if (imageUrl) {
+			try {
+				const color = await fac.getColorAsync(imageUrl);
+				setGradientColor(color.rgba);
+			} catch (error) {
+				console.error("Error extracting color on hover:", error);
+				setGradientColor("rgb(24,24,27)"); // Fallback to default
+			}
+		} else {
+			setGradientColor("rgb(24,24,27)"); // Reset to default if no image or mouse leaves
+		}
+	}, [fac]);
 
 	useEffect(() => {
 		const getGreeting = () => {
@@ -80,7 +100,13 @@ const HomePage = () => {
 	}, [initializeQueue, trendingSongs, featuredSongs]);
 
 	return (
-		<main className='rounded-md overflow-hidden h-full bg-gradient-to-b from-zinc-700 to-zinc-800'>
+		<main
+			className='rounded-md overflow-hidden h-full transition-colors duration-1000'
+			style={{
+				backgroundColor: gradientColor,
+				backgroundImage: `linear-gradient(to bottom, transparent, rgb(24,24,27) 70%)`,
+			}}
+		>
 			<ScrollArea className='h-[calc(100vh-180px)]'>
 				<div className='p-4 sm:p-6'>
 					<h1 className='text-2xl sm:text-3xl font-bold mb-6'>
@@ -98,6 +124,7 @@ const HomePage = () => {
 							title='New Albums'
 							albums={sortedAlbums.slice(0, 4)}
 							isLoading={isLoading}
+							onImageHover={handleImageHover} // Pass hover handler
 							showAllLink={{ to: '/library', state: { viewMode: 'albums', sortOption: 'newest' } }}
 						/>
 						<ArtistGrid

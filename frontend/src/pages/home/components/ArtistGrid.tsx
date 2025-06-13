@@ -8,9 +8,10 @@ type ArtistGridProps = {
 	artists: Artist[];
 	isLoading: boolean;
 	showAllLink?: { to: string; state: { viewMode: "artists" | "albums"; sortOption: "newest" | "oldest" | "alphabetical" } };
+	onImageHover?: (imageUrl: string | null) => void;
 };
 
-const ArtistGrid = ({ artists, title, isLoading, showAllLink }: ArtistGridProps) => {
+const ArtistGrid = ({ artists, title, isLoading, showAllLink, onImageHover }: ArtistGridProps) => {
 	if (isLoading) return <SectionGridSkeleton />;
 
 	return (
@@ -31,6 +32,8 @@ const ArtistGrid = ({ artists, title, isLoading, showAllLink }: ArtistGridProps)
 					<Link to={`/artists/${artist._id}`} key={artist._id}>
 						<div
 							className='bg-zinc-800/40 p-4 rounded-md hover:bg-zinc-700/40 transition-all group cursor-pointer'
+							onMouseEnter={() => onImageHover && onImageHover(artist.profilePhotoUrl)}
+							onMouseLeave={() => onImageHover && onImageHover(null)}
 						>
 							<div className='relative mb-4'>
 								<div className='aspect-square rounded-full shadow-lg overflow-hidden'>

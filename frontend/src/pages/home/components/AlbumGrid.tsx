@@ -9,9 +9,10 @@ type AlbumGridProps = {
 	albums: Album[];
 	isLoading: boolean;
 	showAllLink?: { to: string; state: { viewMode: "artists" | "albums"; sortOption: "newest" | "oldest" | "alphabetical" } };
+	onImageHover?: (imageUrl: string | null) => void;
 };
 
-const AlbumGrid = ({ albums, title, isLoading, showAllLink }: AlbumGridProps) => {
+const AlbumGrid = ({ albums, title, isLoading, showAllLink, onImageHover }: AlbumGridProps) => {
 	if (isLoading) return <SectionGridSkeleton />;
 
 	return (
@@ -32,6 +33,8 @@ const AlbumGrid = ({ albums, title, isLoading, showAllLink }: AlbumGridProps) =>
 					<Link to={`/albums/${album._id}`} key={album._id}>
 						<div
 							className='bg-zinc-800/40 p-4 rounded-md hover:bg-zinc-700/40 transition-all group cursor-pointer'
+							onMouseEnter={() => onImageHover && onImageHover(album.imageUrl)}
+							onMouseLeave={() => onImageHover && onImageHover(null)}
 						>
 							<div className='relative mb-4'>
 								<div className='aspect-square rounded-md shadow-lg overflow-hidden'>
