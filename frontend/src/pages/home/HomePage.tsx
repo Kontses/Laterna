@@ -31,8 +31,6 @@ const HomePage = () => {
 
 	const fac = new FastAverageColor();
 
-	const defaultGradient = "bg-gradient-to-b from-zinc-700 to-zinc-800";
-
 	const handleImageHover = useCallback(async (imageUrl: string | null) => {
 		if (imageUrl) {
 			try {
