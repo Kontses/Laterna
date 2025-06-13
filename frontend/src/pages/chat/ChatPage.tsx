@@ -1,11 +1,11 @@
 import { useChatStore } from "@/stores/useChatStore";
-import { useUser } from "@clerk/clerk-react";
 import { useEffect } from "react";
 import UsersList from "./components/UsersList";
 import ChatHeader from "./components/ChatHeader";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import MessageInput from "./components/MessageInput";
+import { useAuth } from "@/providers/AuthProvider";
 
 const formatTime = (date: string) => {
 	return new Date(date).toLocaleTimeString("en-US", {
@@ -16,7 +16,7 @@ const formatTime = (date: string) => {
 };
 
 const ChatPage = () => {
-	const { user } = useUser();
+	const { user } = useAuth();
 	const { messages, selectedUser, fetchUsers, fetchMessages } = useChatStore();
 
 	useEffect(() => {
@@ -24,8 +24,8 @@ const ChatPage = () => {
 	}, [fetchUsers, user]);
 
 	useEffect(() => {
-		if (selectedUser) fetchMessages(selectedUser.clerkId);
-	}, [selectedUser, fetchMessages]);
+		if (selectedUser && user) fetchMessages(selectedUser._id);
+	}, [selectedUser, fetchMessages, user]);
 
 	console.log({ messages });
 
@@ -47,13 +47,13 @@ const ChatPage = () => {
 										<div
 											key={message._id}
 											className={`flex items-start gap-3 ${
-												message.senderId === user?.id ? "flex-row-reverse" : ""
+												message.senderId === user?._id ? "flex-row-reverse" : ""
 											}`}
 										>
 											<Avatar className='size-8'>
 												<AvatarImage
 													src={
-														message.senderId === user?.id
+														message.senderId === user?._id
 															? user.imageUrl
 															: selectedUser.imageUrl
 													}
@@ -62,7 +62,7 @@ const ChatPage = () => {
 
 											<div
 												className={`rounded-lg p-3 max-w-[70%]
-													${message.senderId === user?.id ? "bg-green-500" : "bg-zinc-800"}
+													${message.senderId === user?._id ? "bg-green-500" : "bg-zinc-800"}
 												`}
 											>
 												<p className='text-sm'>{message.content}</p>

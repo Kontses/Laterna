@@ -3,8 +3,8 @@ import { Message } from "../models/message.model.js";
 
 export const getAllUsers = async (req, res, next) => {
 	try {
-		const currentUserId = req.auth.userId;
-		const users = await User.find({ clerkId: { $ne: currentUserId } });
+		const currentUserId = req.user.id;
+		const users = await User.find({ _id: { $ne: currentUserId } });
 		res.status(200).json(users);
 	} catch (error) {
 		next(error);
@@ -13,7 +13,7 @@ export const getAllUsers = async (req, res, next) => {
 
 export const getMessages = async (req, res, next) => {
 	try {
-		const myId = req.auth.userId;
+		const myId = req.user.id;
 		const { userId } = req.params;
 
 		const messages = await Message.find({
@@ -31,12 +31,64 @@ export const getMessages = async (req, res, next) => {
 
 export const getRecentPlays = async (req, res, next) => {
 	try {
-		const userId = req.auth.userId;
-		const user = await User.findOne({ clerkId: userId }).populate("recentPlays");
+		const userId = req.user.id;
+		const user = await User.findOne({ _id: userId }).populate("recentPlays");
 		if (!user) {
 			return res.status(404).json({ message: "User not found" });
 		}
 		res.status(200).json(user.recentPlays);
+	} catch (error) {
+		next(error);
+	}
+};
+
+export const updateUserProfile = async (req, res, next) => {
+	try {
+		const { id } = req.params;
+		const { nickname, imageUrl } = req.body;
+
+		if (req.user.id !== id) {
+			return res.status(403).json({ message: "Unauthorized" });
+		}
+
+		const user = await User.findById(id);
+
+		if (!user) {
+			return res.status(404).json({ message: "User not found" });
+		}
+
+		user.nickname = nickname || user.nickname;
+		user.imageUrl = imageUrl || user.imageUrl;
+
+		const updatedUser = await user.save();
+
+		res.status(200).json(updatedUser);
+	} catch (error) {
+		next(error);
+	}
+};
+
+export const updateUserPassword = async (req, res, next) => {
+	try {
+		const { id } = req.params;
+		const { password } = req.body;
+
+		if (req.user.id !== id) {
+			return res.status(403).json({ message: "Unauthorized" });
+		}
+
+		const user = await User.findById(id);
+
+		if (!user) {
+			return res.status(404).json({ message: "User not found" });
+		}
+
+		// The pre-save hook in user.model.js will handle hashing the new password
+		user.password = password;
+
+		await user.save();
+
+		res.status(200).json({ message: "Password updated successfully" });
 	} catch (error) {
 		next(error);
 	}

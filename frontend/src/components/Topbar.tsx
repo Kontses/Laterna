@@ -1,4 +1,3 @@
-import { UserButton, SignInButton, useAuth } from "@clerk/clerk-react";
 import { LayoutDashboardIcon, Search } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
@@ -6,11 +5,16 @@ import { Input } from "@/components/ui/input";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "./ui/button";
+import { useAuth } from "@/providers/AuthProvider";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const Topbar = () => {
 	const [searchTerm, setSearchTerm] = useState('');
 	const { isAdmin } = useAuthStore();
-	const { isSignedIn } = useAuth(); // Add this line
+	const { logout, user } = useAuth();
+	const isAuthenticated = !!localStorage.getItem("token");
+
 	console.log({ isAdmin });
 
 	useEffect(() => {
@@ -41,6 +45,16 @@ const Topbar = () => {
 				/>
 			</div>
 			<div className='flex items-center gap-4'>
+				{isAuthenticated && (
+					<Link to={'/profile'} className="cursor-pointer">
+						<Avatar className="w-8 h-8">
+							{user?.imageUrl && <AvatarImage src={user.imageUrl} alt={user.nickname || "User"} />}
+							<AvatarFallback className="bg-violet-600 text-white">
+								{user?.nickname ? user.nickname.charAt(0).toUpperCase() : "U"}
+							</AvatarFallback>
+						</Avatar>
+					</Link>
+				)}
 				{isAdmin && (
 					<Link to={"/admin"} className={cn(buttonVariants({ variant: "outline" }))}>
 						<LayoutDashboardIcon className='size-4  mr-2' />
@@ -48,12 +62,15 @@ const Topbar = () => {
 					</Link>
 				)}
 
-				{
-					// Conditionally render SignInButton if user is signed out
-					!isSignedIn && <SignInButton mode="modal" />
-				}
-
-				<UserButton />
+				{isAuthenticated ? (
+					<Button onClick={logout} variant={"ghost"} className="text-white">
+						Logout
+					</Button>
+				) : (
+					<Link to="/login" className={cn(buttonVariants({ variant: "outline" }))}>
+						Login
+					</Link>
+				)}
 			</div>
 		</div>
 	);

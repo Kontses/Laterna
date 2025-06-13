@@ -53,9 +53,10 @@ export interface Message {
 
 export interface User {
 	_id: string;
-	clerkId: string;
-	fullName: string;
+	nickname: string;
 	imageUrl: string;
+	email: string;
+	role: "user" | "admin";
 }
 
 export interface Artist {

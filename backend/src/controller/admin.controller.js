@@ -1,6 +1,6 @@
 import { Song } from "../models/song.model.js";
 import { Album } from "../models/album.model.js";
-import cloudinary from "../lib/cloudinary.js";
+import { cloudinary } from "../lib/cloudinary.js";
 
 // helper function for cloudinary uploads
 const uploadToCloudinary = async (file, folder, publicId = null, resourceType = "auto") => {
@@ -153,7 +153,11 @@ export const deleteAlbum = async (req, res, next) => {
 };
 
 export const checkAdmin = async (req, res, next) => {
-	res.status(200).json({ admin: true });
+	if (req.user && req.user.role === "admin") {
+		res.status(200).json({ admin: true });
+	} else {
+		res.status(403).json({ message: "Not authorized as an admin" });
+	}
 };
 
 export const handleUpload = async (req, res, next) => {

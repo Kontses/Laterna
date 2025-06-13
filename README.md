@@ -25,7 +25,7 @@
 - **Frontend**: React με TypeScript, Vite, Tailwind CSS, Shadcn UI, Three.js
 - **Backend**: Node.js με Express, Node-cron, Express Fileupload
 - **Βάση Δεδομένων**: MongoDB
-- **Authentication**: Clerk
+- **Authentication**: Custom JWT
 - **File Storage**: Cloudinary
 - **Real-time επικοινωνία**: Socket.io
 
@@ -84,8 +84,7 @@ CLOUDINARY_API_KEY=
 CLOUDINARY_API_SECRET=
 CLOUDINARY_CLOUD_NAME=
 
-CLERK_PUBLISHABLE_KEY=
-CLERK_SECRET_KEY=
+JWT_SECRET=
 ```
 
 ### Frontend (.env)
@@ -93,7 +92,6 @@ CLERK_SECRET_KEY=
 Δημιουργήστε ένα αρχείο `.env` στον φάκελο `frontend` με τα εξής περιεχόμενα:
 
 ```bash
-VITE_CLERK_PUBLISHABLE_KEY=
 VITE_API_URL=http://localhost:5000/api
 VITE_SOCKET_URL=http://localhost:5000
 VITE_CLOUDINARY_CLOUD_NAME=
@@ -101,17 +99,17 @@ VITE_CLOUDINARY_CLOUD_NAME=
 
 ### Οδηγίες για τις μεταβλητές περιβάλλοντος
 
-1. **Clerk Authentication**:
-   - Δημιουργήστε λογαριασμό στο [Clerk](https://clerk.dev/)
-   - Δημιουργήστε μια νέα εφαρμογή και αντιγράψτε τα κλειδιά API
-
-2. **Cloudinary**:
+1. **Cloudinary**:
    - Δημιουργήστε λογαριασμό στο [Cloudinary](https://cloudinary.com/)
    - Βρείτε τα κλειδιά API στον πίνακα ελέγχου
 
-3. **MongoDB**:
+2. **MongoDB**:
    - Χρησιμοποιήστε τοπική εγκατάσταση ή [MongoDB Atlas](https://www.mongodb.com/cloud/atlas)
    - Αντικαταστήστε το MONGODB_URI με το δικό σας connection string
+
+3. **JWT_SECRET**:
+   - Δημιουργήστε μια τυχαία, μεγάλη και πολύπλοκη συμβολοσειρά για το JWT_SECRET.
+   - Μπορείτε να χρησιμοποιήσετε ένα online εργαλείο δημιουργίας τυχαίων συμβολοσειρών.
 
 ## Λειτουργία Backend
 
@@ -151,24 +149,24 @@ npm run seed:albums
 
 ## Authentication
 
-Η εφαρμογή χρησιμοποιεί το Clerk για authentication:
+Η εφαρμογή χρησιμοποιεί προσαρμοσμένο authentication με JWT:
 
-1. **Frontend**: Χρησιμοποιεί το `ClerkProvider` για να παρέχει authentication context
-2. **Backend**: Χρησιμοποιεί το `clerkMiddleware` για να επαληθεύει τα tokens
-3. **Admin Access**: Ελέγχεται μέσω του email (πρέπει να ταιριάζει με το ADMIN_EMAIL στο .env)
+1. **Frontend**: Διαχειρίζεται τα tokens στο localStorage και στέλνει επικεφαλίδες Authorization.
+2. **Backend**: Χρησιμοποιεί middleware για την επαλήθευση των JWT tokens.
+3. **Admin Access**: Ελέγχεται μέσω του πεδίου `role` στο μοντέλο χρήστη.
 
 ### Middleware Ασφαλείας
 
-- `protectRoute`: Εξασφαλίζει ότι ο χρήστης είναι συνδεδεμένος
-- `requireAdmin`: Εξασφαλίζει ότι ο χρήστης είναι διαχειριστής
+- `protectRoute`: Εξασφαλίζει ότι ο χρήστης είναι συνδεδεμένος και έχει έγκυρο token.
+- `requireAdmin`: Εξασφαλίζει ότι ο χρήστης είναι διαχειριστής.
 
 ## Επίπεδο Ασφάλειας
 
-1. **Authentication**: Ασφαλές μέσω Clerk (industry-standard)
-2. **Authorization**: Έλεγχοι για admin πρόσβαση
-3. **CORS**: Ρυθμισμένο για να επιτρέπει μόνο το frontend origin
-4. **File Uploads**: Περιορισμοί μεγέθους (1GB) και προσωρινή αποθήκευση
-5. **Error Handling**: Γενικά μηνύματα σφάλματος σε production
+1. **Authentication**: Ασφαλές μέσω Custom JWT (με bcrypt για κωδικούς).
+2. **Authorization**: Έλεγχοι για admin πρόσβαση.
+3. **CORS**: Ρυθμισμένο για να επιτρέπει μόνο το frontend origin.
+4. **File Uploads**: Περιορισμοί μεγέθους (1GB) και προσωρινή αποθήκευση.
+5. **Error Handling**: Γενικά μηνύματα σφάλματος σε production.
 
 ## Real-time Λειτουργικότητα
 

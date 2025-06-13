@@ -3,18 +3,31 @@ import { buttonVariants } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { useMusicStore } from "@/stores/useMusicStore";
-import { SignedIn } from "@clerk/clerk-react";
 import { HomeIcon, Library, MessageCircle } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Artist } from "@/types";
 
 const LeftSidebar = () => {
 	const { albums, fetchAlbums, isLoading } = useMusicStore();
+	const [isAuthenticated, setIsAuthenticated] = useState(false);
 
 	useEffect(() => {
 		fetchAlbums();
 	}, [fetchAlbums]);
+
+	useEffect(() => {
+		const token = localStorage.getItem("token");
+		setIsAuthenticated(!!token);
+
+		const handleStorageChange = () => {
+			const newToken = localStorage.getItem("token");
+			setIsAuthenticated(!!newToken);
+		};
+
+		window.addEventListener("storage", handleStorageChange);
+		return () => window.removeEventListener("storage", handleStorageChange);
+	}, []);
 
 	console.log({ albums });
 
@@ -37,7 +50,7 @@ const LeftSidebar = () => {
 						<span className='hidden md:inline'>Home</span>
 					</Link>
 
-					<SignedIn>
+					{isAuthenticated && (
 						<Link
 							to={"/chat"}
 							className={cn(
@@ -50,7 +63,7 @@ const LeftSidebar = () => {
 							<MessageCircle className='mr-2 size-5' />
 							<span className='hidden md:inline'>Messages</span>
 						</Link>
-					</SignedIn>
+					)}
 					<Link
 						to={"/library"}
 						className={cn(

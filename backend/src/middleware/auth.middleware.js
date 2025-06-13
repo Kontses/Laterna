@@ -1,23 +1,35 @@
-import { clerkClient } from "@clerk/express";
+import jwt from "jsonwebtoken";
+import { User } from "../models/user.model.js";
 
 export const protectRoute = async (req, res, next) => {
-	if (!req.auth.userId) {
-		return res.status(401).json({ message: "Unauthorized - you must be logged in" });
+	let token;
+
+	if (req.headers.authorization && req.headers.authorization.startsWith("Bearer")) {
+		try {
+			// Get token from header
+			token = req.headers.authorization.split(" ")[1];
+
+			// Verify token
+			const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+			// Get user from the token
+			req.user = await User.findById(decoded.id).select("-password");
+			next();
+		} catch (error) {
+			console.error(error);
+			res.status(401).json({ message: "Not authorized, token failed" });
+		}
 	}
-	next();
+
+	if (!token) {
+		res.status(401).json({ message: "Not authorized, no token" });
+	}
 };
 
-export const requireAdmin = async (req, res, next) => {
-	try {
-		const currentUser = await clerkClient.users.getUser(req.auth.userId);
-		const isAdmin = process.env.ADMIN_EMAIL === currentUser.primaryEmailAddress?.emailAddress;
-
-		if (!isAdmin) {
-			return res.status(403).json({ message: "Unauthorized - you must be an admin" });
-		}
-
+export const requireAdmin = (req, res, next) => {
+	if (req.user && req.user.role === "admin") {
 		next();
-	} catch (error) {
-		next(error);
+	} else {
+		res.status(403).json({ message: "Not authorized as an admin" });
 	}
 };

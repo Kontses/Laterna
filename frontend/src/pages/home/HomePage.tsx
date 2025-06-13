@@ -3,11 +3,11 @@ import { useEffect, useState } from "react";
 import FeaturedSection from "./components/FeaturedSection";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { usePlayerStore } from "@/stores/usePlayerStore";
-import { useUser } from "@clerk/clerk-react";
 import { useRecentPlaysStore } from "@/stores/useRecentPlaysStore";
 import RecentPlaysGrid from "./components/RecentPlaysGrid"; // Import RecentPlaysGrid
 import ArtistGrid from "./components/ArtistGrid"; // Import ArtistGrid
 import AlbumGrid from "./components/AlbumGrid"; // Import AlbumGrid
+import { useAuth } from "@/providers/AuthProvider"; // Import useAuth
 
 const HomePage = () => {
 	const {
@@ -21,7 +21,7 @@ const HomePage = () => {
 	} = useMusicStore();
 
 	const { initializeQueue } = usePlayerStore();
-	const { user, isLoaded, isSignedIn } = useUser();
+	const { user } = useAuth(); // Use custom useAuth hook
 	const [greeting, setGreeting] = useState("");
 	const [greetingEmoji, setGreetingEmoji] = useState<string>("");
 
@@ -45,22 +45,22 @@ const HomePage = () => {
 	}, []);
 
 	useEffect(() => {
-		if (isLoaded && isSignedIn) {
+		if (user) {
 			fetchRecentPlays();
 		}
-	}, [fetchRecentPlays, isLoaded, isSignedIn]);
+	}, [fetchRecentPlays, user]); // Removed isLoaded and isSignedIn
 
 	useEffect(() => {
-		if (isLoaded) {
+		if (user) {
 			fetchArtists();
 		}
-	}, [fetchArtists, isLoaded]);
+	}, [fetchArtists, user]); // Removed isLoaded
 
 	useEffect(() => {
-		if (isLoaded && isSignedIn) {
+		if (user) {
 			fetchAlbums(); // Fetch albums
 		}
-	}, [fetchAlbums, isLoaded, isSignedIn]);
+	}, [fetchAlbums, user]); // Removed isLoaded and isSignedIn
 
 	// Sort artists by _id (assuming _id contains a timestamp for creation order)
 	const sortedArtists = [...artists].sort((a, b) => b._id.localeCompare(a._id));
@@ -80,12 +80,12 @@ const HomePage = () => {
 	}, [initializeQueue, trendingSongs, featuredSongs]);
 
 	return (
-		<main className='rounded-md overflow-hidden h-full bg-gradient-to-b from-zinc-800 to-zinc-900'>
+		<main className='rounded-md overflow-hidden h-full bg-gradient-to-b from-zinc-700 to-zinc-800'>
 			<ScrollArea className='h-[calc(100vh-180px)]'>
 				<div className='p-4 sm:p-6'>
 					<h1 className='text-2xl sm:text-3xl font-bold mb-6'>
 						{greeting}
-						{user?.username ? ` ${user.username}!` : "!"} {greetingEmoji}
+						{user?.nickname ? ` ${user.nickname}!` : "!"} {greetingEmoji}
 					</h1>
 					{/* Display Recent Plays Grid */}
 					<div className="mb-8">

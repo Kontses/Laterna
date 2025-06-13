@@ -1,8 +1,21 @@
 import express from "express";
 import dotenv from "dotenv";
-import { clerkMiddleware } from "@clerk/express";
-import fileUpload from "express-fileupload";
 import path from "path";
+import { v2 as cloudinary } from "cloudinary";
+
+// Load environment variables as early as possible
+dotenv.config({ path: path.resolve(process.cwd(), ".env.local") });
+
+// Configure Cloudinary *after* environment variables are loaded
+cloudinary.config({
+	cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+	api_key: process.env.CLOUDINARY_API_KEY,
+	api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+console.log("Cloudinary API Key (from index.js):", process.env.CLOUDINARY_API_KEY); // Confirm it here
+
+import fileUpload from "express-fileupload";
 import cors from "cors";
 import fs from "fs";
 import { createServer } from "http";
@@ -17,10 +30,10 @@ import authRoutes from "./routes/auth.route.js";
 import songRoutes from "./routes/song.route.js";
 import albumRoutes from "./routes/album.route.js";
 import statRoutes from "./routes/stat.route.js";
-import artistRoutes from "./routes/artist.route.js"; // Import artist routes
+import artistRoutes from "./routes/artist.route.js";
+import uploadRoutes from "./routes/upload.route.js"; // Import upload routes
 
 const __dirname = path.resolve();
-dotenv.config({ path: path.resolve(__dirname, ".env.local") });
 
 const app = express();
 const PORT = process.env.PORT;
@@ -35,8 +48,9 @@ app.use(
 	})
 );
 
-app.use(express.json()); // to parse req.body
-app.use(clerkMiddleware()); // this will add auth to req obj => req.auth
+app.use(express.json({ limit: '50mb' })); // to parse req.body with increased limit
+app.use(express.urlencoded({ limit: '50mb', extended: true })); // for parsing application/x-www-form-urlencoded
+
 app.use(
 	fileUpload({
 		useTempFiles: true,
@@ -70,7 +84,8 @@ app.use("/api/auth", authRoutes);
 app.use("/api/songs", songRoutes);
 app.use("/api/albums", albumRoutes);
 app.use("/api/stats", statRoutes);
-app.use("/api/artists", artistRoutes); // Use artist routes
+app.use("/api/artists", artistRoutes);
+app.use("/api/upload", uploadRoutes); // Use upload routes
 
 if (process.env.NODE_ENV === "production") {
 	app.use(express.static(path.join(__dirname, "../frontend/dist")));

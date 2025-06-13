@@ -42,7 +42,7 @@ const MainLayout = () => {
 
 
 	return (
-		<div className='h-screen bg-black text-white flex flex-col'>
+		<div className='h-screen text-white flex flex-col'>
 			<Topbar /> {/* Add Topbar here */}
 			<ResizablePanelGroup direction='horizontal' className='flex-1 flex h-full overflow-hidden p-2'>
 				<AudioPlayer />

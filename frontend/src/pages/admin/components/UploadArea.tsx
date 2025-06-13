@@ -5,7 +5,6 @@ import { Upload } from "lucide-react";
 import { axiosInstance } from "@/lib/axios"; // Import axiosInstance
 import toast from "react-hot-toast"; // Import toast
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useAuth } from "@clerk/clerk-react"; // Import useAuth
 import { DndContext, closestCorners, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -49,7 +48,6 @@ const UploadArea = ({ artistListVersion }: { artistListVersion: number }) => {
   const [isLoading, setIsLoading] = useState(false); // Add loading state
   const fileInputRef = useRef<HTMLInputElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
-  const { getToken } = useAuth(); // Get getToken from useAuth
 
   const [artists, setArtists] = useState<any[]>([]); // State to store artists
   const [loadingArtists, setLoadingArtists] = useState(true); // State to manage loading state of artists
@@ -233,11 +231,9 @@ const UploadArea = ({ artistListVersion }: { artistListVersion: number }) => {
     }
 
     try {
-      const token = await getToken(); // Get the token
       const response = await axiosInstance.post("/admin/upload", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
-          "Authorization": `Bearer ${token}`, // Add Authorization header
         },
       });
 
@@ -429,11 +425,9 @@ const UploadArea = ({ artistListVersion }: { artistListVersion: number }) => {
     formData.append('name', mediaDetails.name); // Append the media name
 
     try {
-      const token = await getToken();
       const response = await axiosInstance.post("/admin/upload-media", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
-          "Authorization": `Bearer ${token}`,
         },
       });
 
