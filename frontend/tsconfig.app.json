@@ -27,7 +27,7 @@
 		"noFallthroughCasesInSwitch": true,
 		"noUncheckedSideEffectImports": true,
 
-		"types": []
+		"types": ["@radix-ui/react-switch"]
 	},
 	"include": ["src", "src/types"]
 }

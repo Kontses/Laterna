@@ -18,25 +18,21 @@ const RecentPlaysGrid = ({ songs, isLoading }: RecentPlaysGridProps) => {
 			{songs.map((song) => (
 				<div
 					key={song._id}
-					className='bg-zinc-800/40 p-2 rounded-md hover:bg-zinc-700/40 transition-all group cursor-pointer flex items-center'
+					className='bg-zinc-800/40 p-2 rounded-md hover:bg-zinc-700/40 transition-all group cursor-pointer flex items-center relative'
 					onClick={() => setCurrentSong(song)} // Make the whole card clickable
 				>
-					<div className='relative w-16 h-16 mr-4'>
-						<div className='aspect-square rounded-md shadow-lg overflow-hidden'>
-							<img
-								src={song.imageUrl}
-								alt={song.title}
-								className='w-full h-full object-cover transition-transform duration-300 
-								group-hover:scale-105'
-							/>
-						</div>
-						{/* PlayButton is still here for visual consistency, but the whole card is clickable */}
-						<PlayButton song={song} className="absolute bottom-1 right-1 size-8" />
+					<div className='w-16 h-16 mr-4 flex-shrink-0'>
+						<img
+							src={song.imageUrl}
+							alt={song.title}
+							className='w-full h-full object-cover rounded-md'
+						/>
 					</div>
-					<div className="flex-1">
+					<div className="flex-1 min-w-0">
 						<h3 className='font-medium text-sm truncate'>{song.title}</h3>
 						<p className='text-xs text-zinc-400 truncate'>{song.artist}</p>
 					</div>
+					<PlayButton song={song} className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity" />
 				</div>
 			))}
 		</div>

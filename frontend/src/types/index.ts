@@ -78,3 +78,31 @@ export interface MediaItem {
 	description?: string;
 	// Add other fields if necessary, like file type (image/video)
 }
+
+export type RecentPlay = {
+	_id: string;
+	user: string;
+	song: Song;
+	playedAt: string;
+};
+
+export type Chat = {
+	_id: string;
+	participants: User[];
+	lastMessage?: Message;
+	createdAt: string;
+	updatedAt: string;
+};
+
+export type Playlist = {
+	_id: string;
+	name: string;
+	description?: string;
+	user: User; // The user who created the playlist
+	songs: Song[];
+	imageUrl?: string;
+	isPublic: boolean;
+	likes: string[]; // Array of User IDs who liked the playlist
+	createdAt: string;
+	updatedAt: string;
+};

@@ -10,6 +10,7 @@ import LibraryPage from "./pages/library/LibraryPage";
 import LoginPage from "./pages/auth/LoginPage";
 import RegisterPage from "./pages/auth/RegisterPage";
 import ProfilePage from "./pages/profile/ProfilePage";
+import PlaylistPage from "./pages/playlist/PlaylistPage";
 
 import { Toaster } from "react-hot-toast";
 import NotFoundPage from "./pages/404/NotFoundPage";
@@ -31,6 +32,7 @@ function App() {
 					<Route path='/admin' element={<AdminPage />} />
 					<Route path='/about' element={<AboutPage />} />
 					<Route path='/library' element={<LibraryPage />} />
+					<Route path='/playlists/:id' element={<PlaylistPage />} />
 					<Route path='/profile' element={<ProfilePage />} />
 					<Route path='*' element={<NotFoundPage />} />
 				</Route>

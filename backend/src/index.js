@@ -32,6 +32,8 @@ import albumRoutes from "./routes/album.route.js";
 import statRoutes from "./routes/stat.route.js";
 import artistRoutes from "./routes/artist.route.js";
 import uploadRoutes from "./routes/upload.route.js"; // Import upload routes
+import chatRoutes from './routes/chat.route.js';
+import playlistRoutes from './routes/playlist.route.js';
 
 const __dirname = path.resolve();
 
@@ -86,6 +88,8 @@ app.use("/api/albums", albumRoutes);
 app.use("/api/stats", statRoutes);
 app.use("/api/artists", artistRoutes);
 app.use("/api/upload", uploadRoutes); // Use upload routes
+app.use("/api/chat", chatRoutes);
+app.use("/api/playlists", playlistRoutes);
 
 if (process.env.NODE_ENV === "production") {
 	app.use(express.static(path.join(__dirname, "../frontend/dist")));

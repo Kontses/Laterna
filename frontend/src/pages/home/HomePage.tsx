@@ -66,19 +66,15 @@ const HomePage = () => {
 		if (user) {
 			fetchRecentPlays();
 		}
-	}, [fetchRecentPlays, user]); // Removed isLoaded and isSignedIn
+	}, [fetchRecentPlays, user]);
 
 	useEffect(() => {
-		if (user) {
-			fetchArtists();
-		}
-	}, [fetchArtists, user]); // Removed isLoaded
+		fetchArtists();
+	}, [fetchArtists]);
 
 	useEffect(() => {
-		if (user) {
-			fetchAlbums(); // Fetch albums
-		}
-	}, [fetchAlbums, user]); // Removed isLoaded and isSignedIn
+		fetchAlbums(); // Fetch albums
+	}, [fetchAlbums]);
 
 	// Sort artists by _id (assuming _id contains a timestamp for creation order)
 	const sortedArtists = [...artists].sort((a, b) => b._id.localeCompare(a._id));

@@ -3,7 +3,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useMusicStore } from "@/stores/useMusicStore";
 import { usePlayerStore } from "@/stores/usePlayerStore";
 import { useAlbumDescriptionStore } from "@/stores/useAlbumDescriptionStore"; // Import the store
-import { Clock, Pause, Play, Download } from "lucide-react";
+import { Clock, Pause, Play, Download, Plus, Library } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { FastAverageColor } from 'fast-average-color'; // Added import
@@ -11,10 +11,14 @@ import { Artist } from "@/types"; // Εισαγωγή του τύπου Artist
 import {
 	Dialog,
 	DialogContent,
-	DialogOverlay,
+	DialogHeader,
 	DialogTitle,
 	DialogDescription,
-} from "@/components/ui/dialog"; // Import Dialog components
+	DialogTrigger,
+	DialogOverlay,
+} from "@/components/ui/dialog";
+import { usePlaylistStore } from "@/stores/usePlaylistStore"; // Import usePlaylistStore
+import { toast } from 'sonner'; // Import toast
 
 const formatDuration = (seconds: number) => {
 	const minutes = Math.floor(seconds / 60);
@@ -28,8 +32,10 @@ const AlbumPage = () => {
 	const { currentSong, isPlaying, playAlbum, togglePlay } = usePlayerStore();
 	const { setAlbumDescription } = useAlbumDescriptionStore(); // Get setAlbumDescription from the store
 	const [isImageViewerOpen, setIsImageViewerOpen] = useState(false); // State for image viewer
+	const [isAddPlaylistDialogOpen, setIsAddPlaylistDialogOpen] = useState(false); // State for Add to Playlist dialog
 
 	const [gradientColor, setGradientColor] = useState<string>("#5038a0"); // Default static color - Reverted to state
+	const { playlists, fetchPlaylists, addSongToPlaylist } = usePlaylistStore(); // Get playlists and actions
 
 	useEffect(() => {
 		if (albumId) fetchAlbumById(albumId);
@@ -55,6 +61,12 @@ const AlbumPage = () => {
 		extractColor(); // Call the renamed function
 	}, [currentAlbum, setAlbumDescription]);
 
+	useEffect(() => {
+		if (isAddPlaylistDialogOpen) {
+			fetchPlaylists(); // Fetch playlists when the dialog opens
+		}
+	}, [isAddPlaylistDialogOpen, fetchPlaylists]);
+
 
 	if (isLoading) return null;
 
@@ -77,6 +89,21 @@ const AlbumPage = () => {
 
 	const openImageViewer = () => {
 		setIsImageViewerOpen(true);
+	};
+
+	const handleAddToPlaylist = async (playlistId: string, songId: string) => {
+		try {
+			const updatedPlaylist = await addSongToPlaylist(playlistId, songId);
+			if (updatedPlaylist) {
+				toast.success(`Song added to ${updatedPlaylist.name}!`);
+			} else {
+				toast.error("Failed to add song to playlist.");
+			}
+		} catch (error) {
+			console.error("Error adding song to playlist:", error);
+			toast.error("An error occurred while adding the song.");
+		}
+		setIsAddPlaylistDialogOpen(false);
 	};
 
 	return (
@@ -112,29 +139,15 @@ const AlbumPage = () => {
 											<span className='font-medium text-white'>{(currentAlbum.artistId as Artist).name}</span>
 										</Link>
 									)}
-									<span>• {currentAlbum?.songs.length} songs</span>
-									<span>• {currentAlbum?.releaseDate && new Date(currentAlbum.releaseDate).getFullYear()}</span>
-									<Button
-										variant="ghost"
-										size="sm"
-										onClick={() => {
-											if (currentAlbum && currentAlbum.artistId && typeof currentAlbum.artistId === 'object' && 'name' in currentAlbum.artistId) {
-												const cloudName = 'YOUR_CLOUD_NAME'; // Replace with your Cloudinary cloud name
-												const folderPath = `laterna/artists/${(currentAlbum.artistId as Artist).name}/${currentAlbum.title}`; // Use populated artist name
-												const zipUrl = `https://res.cloudinary.com/${cloudName}/image/list/${folderPath}/archive.zip`;
-												window.open(zipUrl, '_blank');
-											}
-										}}
-									>
-										Download Album
-									</Button>
+									<span className="opacity-70">• {currentAlbum?.releaseDate && new Date(currentAlbum.releaseDate).getFullYear()}</span>
+									<span className="opacity-70">• {currentAlbum?.songs.length} songs</span>
 								</div>
 							</div>
 						</div>
 
 						{/* Album Description - Removed from here */}
 
-						{/* play button */}
+						{/* play button and download button */}
 						<div className='px-6 pb-4 flex items-center gap-6'>
 							<Button
 								onClick={handlePlayAlbum}
@@ -148,21 +161,37 @@ const AlbumPage = () => {
 									<Play className='h-7 w-7' fill='black' />
 								)}
 							</Button>
+							<Button
+								variant="ghost"
+								size="sm"
+								className="hover:bg-zinc-700 opacity-70"
+								onClick={() => {
+									if (currentAlbum && currentAlbum.artistId && typeof currentAlbum.artistId === 'object' && 'name' in currentAlbum.artistId) {
+										const cloudName = 'YOUR_CLOUD_NAME';
+										const folderPath = `laterna/artists/${(currentAlbum.artistId as Artist).name}/${currentAlbum.title}`;
+										const zipUrl = `https://res.cloudinary.com/${cloudName}/image/list/${folderPath}/archive.zip`;
+										window.open(zipUrl, '_blank');
+									}
+								}}
+							>
+								Download Album
+							</Button>
 						</div>
 
 						{/* Table Section */}
 						<div className='bg-black/20 backdrop-blur-sm'>
 							{/* table header */}
 							<div
-								className='grid grid-cols-[16px_5fr_60px_auto] gap-4 px-10 py-2 text-sm
+								className='grid grid-cols-[16px_5fr_40px_40px_60px] gap-4 px-10 py-2 text-sm
             text-zinc-400 border-b border-white/5'
 							>
 								<div>#</div>
 								<div>Title</div>
-								<div>
+								<div className='flex items-center justify-end'><Library className='h-4 w-4' /></div>
+								<div className='flex items-center justify-end'><Download className='h-4 w-4' /></div>
+								<div className='flex items-center justify-end'>
 									<Clock className='h-4 w-4' />
 								</div>
-								<div><Download className='h-4 w-4' /></div>
 							</div>
 
 							{/* songs list */}
@@ -175,7 +204,7 @@ const AlbumPage = () => {
 											<div
 												key={song._id}
 												onClick={() => handlePlaySong(index)}
-												className={`grid grid-cols-[16px_5fr_60px_auto] gap-4 px-4 py-2 text-sm
+												className={`grid grid-cols-[16px_5fr_40px_40px_60px] gap-4 px-4 py-2 text-sm
                       text-zinc-400 hover:bg-white/5 rounded-md group cursor-pointer
                       ${isCurrentSong ? 'text-white' : ''}
                       `}
@@ -203,8 +232,51 @@ const AlbumPage = () => {
 														)}
 													</div>
 												</div>
-												<div className='flex items-center'>{formatDuration(song.duration)}</div>
-												<div className='flex items-center'>
+												{/* Add to Playlist Button */}
+												<div className='flex items-center justify-end'>
+													<Dialog open={isAddPlaylistDialogOpen} onOpenChange={setIsAddPlaylistDialogOpen}>
+														<DialogTrigger asChild>
+															<Button
+																variant='ghost'
+																size='icon'
+																className='rounded-full w-8 h-8 hover:bg-zinc-700'
+																onClick={(e) => e.stopPropagation()}
+															>
+																<Plus className='size-4 text-zinc-400 hover:text-white' />
+															</Button>
+														</DialogTrigger>
+														<DialogOverlay className="fixed inset-0 z-40 bg-black/20" />
+														<DialogContent className='bg-zinc-900/60 border-zinc-700 shadow-lg rounded-md p-6 z-50'>
+															<DialogHeader>
+																<DialogTitle>Add to Playlist</DialogTitle>
+															</DialogHeader>
+															<div className='grid gap-2 py-4'>
+																{playlists.length > 0 ? (
+																	playlists.map((playlist) => {
+																		return (
+																			<div
+																				key={playlist._id}
+																				onClick={() => handleAddToPlaylist(playlist._id, song._id)}
+																				className='flex items-center gap-2 p-2 hover:bg-zinc-700 rounded-md cursor-pointer'
+																			>
+																				<img
+																					src={playlist.imageUrl || '/src/assets/placeholder-playlist.png'}
+																					alt={playlist.name}
+																					className='size-8 rounded-sm object-cover'
+																				/>
+																				<span className='text-white'>{playlist.name}</span>
+																			</div>
+																		);
+																	})
+																) : (
+																	<p className='text-zinc-400'>No playlists available. Create one first!</p>
+																)}
+															</div>
+														</DialogContent>
+													</Dialog>
+												</div>
+												{/* Download Button */}
+												<div className='flex items-center justify-end'>
 													<Button
 														variant="ghost"
 														size="icon"
@@ -221,6 +293,7 @@ const AlbumPage = () => {
 														<Download className='h-4 w-4' />
 													</Button>
 												</div>
+												<div className='flex items-center justify-end'>{formatDuration(song.duration)}</div>
 											</div>
 										);
 									})}
@@ -233,7 +306,7 @@ const AlbumPage = () => {
 
 			{/* Image Viewer Modal */}
 			<Dialog open={isImageViewerOpen} onOpenChange={setIsImageViewerOpen}>
-				<DialogOverlay className="fixed inset-0 bg-black/30 z-50" />
+				<DialogOverlay className="fixed inset-0 z-50 bg-black/20" />
 				<DialogContent
 					className="fixed inset-0 flex items-center justify-center w-screen h-screen bg-transparent p-0 border-none overflow-hidden"
 					aria-labelledby="dialog-title"
