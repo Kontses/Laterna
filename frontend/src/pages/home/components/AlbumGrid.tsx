@@ -1,8 +1,8 @@
 import { Album } from "@/types";
 import SectionGridSkeleton from "./SectionGridSkeleton";
 import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
-import PlayButton from "@/pages/home/components/PlayButton";
+import { Link, useNavigate } from "react-router-dom";
+import PlayAlbumButton from "@/pages/home/components/PlayAlbumButton";
 
 type AlbumGridProps = {
 	title?: string;
@@ -13,6 +13,8 @@ type AlbumGridProps = {
 };
 
 const AlbumGrid = ({ albums, title, isLoading, showAllLink, onImageHover }: AlbumGridProps) => {
+	const navigate = useNavigate();
+
 	if (isLoading) return <SectionGridSkeleton />;
 
 	return (
@@ -30,34 +32,33 @@ const AlbumGrid = ({ albums, title, isLoading, showAllLink, onImageHover }: Albu
 
 			<div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4'>
 				{albums.map((album) => (
-					<Link to={`/albums/${album._id}`} key={album._id}>
-						<div
-							className='bg-zinc-800/40 p-4 rounded-md hover:bg-zinc-700/40 transition-all group cursor-pointer'
-							onMouseEnter={() => onImageHover && onImageHover(album.imageUrl)}
-							onMouseLeave={() => onImageHover && onImageHover(null)}
-						>
-							<div className='relative mb-4'>
-								<div className='aspect-square rounded-md shadow-lg overflow-hidden'>
-									<img
-										src={album.imageUrl}
-										alt={album.title}
-										className='w-full h-full object-cover transition-transform duration-300 
-										group-hover:scale-105'
-									/>
-								</div>
-								{album.songs && album.songs.length > 0 && (
-									<PlayButton song={album.songs[0]} />
-								)}
+					<div key={album._id}
+						className='bg-zinc-800/40 p-4 rounded-md hover:bg-zinc-700/40 transition-all group cursor-pointer relative'
+						onMouseEnter={() => onImageHover && onImageHover(album.imageUrl)}
+						onMouseLeave={() => onImageHover && onImageHover(null)}
+						onClick={() => navigate(`/albums/${album._id}`)}
+					>
+						<div className='relative mb-4'>
+							<div className='aspect-square rounded-md shadow-lg overflow-hidden'>
+								<img
+									src={album.imageUrl}
+									alt={album.title}
+									className='w-full h-full object-cover transition-transform duration-300 
+									group-hover:scale-105'
+								/>
 							</div>
-							<h3 className='font-medium mb-2 truncate'>{album.title}</h3>
-							{album.artistId && typeof album.artistId === 'object' && album.artistId.name && (
-								<p className='text-sm text-zinc-400 truncate'>{album.artistId.name}</p>
-							)}
-							{album.releaseDate && (
-								<p className='text-xs text-zinc-400'>{new Date(album.releaseDate).getFullYear()}</p>
+							{album.songs && album.songs.length > 0 && (
+								<PlayAlbumButton album={album} className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity translate-y-2 group-hover:translate-y-0" />
 							)}
 						</div>
-					</Link>
+						<h3 className='font-medium mb-2 truncate'>{album.title}</h3>
+						{album.artistId && typeof album.artistId === 'object' && album.artistId.name && (
+							<p className='text-sm text-zinc-400 truncate'>{album.artistId.name}</p>
+						)}
+						{album.releaseDate && (
+							<p className='text-xs text-zinc-400'>{new Date(album.releaseDate).getFullYear()}</p>
+						)}
+					</div>
 				))}
 			</div>
 		</div>

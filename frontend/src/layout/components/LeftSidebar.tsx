@@ -14,6 +14,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/providers/AuthProvider";
 import { toast } from 'sonner';
+import PlayPlaylistButton from "@/pages/home/components/PlayPlaylistButton";
 
 const LeftSidebar = () => {
 	const { playlists, fetchPlaylists, createPlaylist, isLoading } = usePlaylistStore();
@@ -157,28 +158,30 @@ const LeftSidebar = () => {
 						) : isAuthenticated ? (
 							Array.isArray(playlists) && playlists.length > 0 ? (
 								playlists.map((playlist) => (
-									<Link
-										to={`/playlists/${playlist._id}`}
+									<div
 										key={playlist._id}
-										className='p-2 hover:bg-zinc-800 rounded-md flex items-center gap-3 group cursor-pointer'
+										className='p-2 hover:bg-zinc-800 rounded-md flex items-center gap-3 group cursor-pointer relative'
 									>
-										{playlist.imageUrl ? (
-											<img
-												src={playlist.imageUrl}
-												alt='Playlist img'
-												className='size-12 rounded-md flex-shrink-0 object-cover'
-											/>
-										) : (
-											<div className='size-12 rounded-md flex-shrink-0 bg-zinc-700 flex items-center justify-center'>
-												<Music className='size-6 text-white/50' />
-											</div>
-										)}
+										<Link to={`/playlists/${playlist._id}`} className="flex items-center gap-3 flex-1 min-w-0">
+											{playlist.imageUrl ? (
+												<img
+													src={playlist.imageUrl}
+													alt='Playlist img'
+													className='size-12 rounded-md flex-shrink-0 object-cover'
+												/>
+											) : (
+												<div className='size-12 rounded-md flex-shrink-0 bg-zinc-700 flex items-center justify-center'>
+													<Music className='size-6 text-white/50' />
+												</div>
+											)}
 
-										<div className='flex-1 min-w-0 hidden md:block'>
-											<p className='font-medium truncate'>{playlist.name}</p>
-											<p className='text-sm text-zinc-400 truncate'>Playlist • {playlist.user?.nickname || "Unknown User"}</p>
-										</div>
-									</Link>
+											<div className='flex-1 min-w-0 hidden md:block'>
+												<p className='font-medium truncate'>{playlist.name}</p>
+												<p className='text-sm text-zinc-400 truncate'>Playlist • {playlist.user?.nickname || "Unknown User"}</p>
+											</div>
+										</Link>
+										<PlayPlaylistButton playlist={playlist} className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity" />
+									</div>
 								))
 							) : (
 								<p className="text-zinc-400 text-sm">No playlists created yet.</p>

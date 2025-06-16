@@ -4,6 +4,7 @@ import { useAlbumDescriptionStore } from './useAlbumDescriptionStore';
 interface QueueState {
   showQueue: boolean;
   toggleQueue: () => void;
+  setShowQueue: (show: boolean) => void;
 }
 
 export const useQueueStore = create<QueueState>((set) => ({
@@ -15,4 +16,5 @@ export const useQueueStore = create<QueueState>((set) => ({
     }
     return ({ showQueue: !state.showQueue });
   }),
+  setShowQueue: (show: boolean) => set({ showQueue: show }),
 })); 
