@@ -109,7 +109,7 @@ const HomePage = () => {
 					</h1>
 					{/* Display Recent Plays Grid */}
 					<div className="mb-8">
-						<RecentPlaysGrid songs={recentPlays} isLoading={isRecentPlaysLoading} />
+						<RecentPlaysGrid songs={recentPlays} isLoading={isRecentPlaysLoading} onImageHover={handleImageHover} />
 					</div>
 					<FeaturedSection />
 

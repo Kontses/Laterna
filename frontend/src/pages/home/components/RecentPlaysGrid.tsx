@@ -6,9 +6,10 @@ import { usePlayerStore } from "@/stores/usePlayerStore"; // Import usePlayerSto
 type RecentPlaysGridProps = {
 	songs: Song[];
 	isLoading: boolean;
+	onImageHover: (imageUrl: string | null) => void;
 };
 
-const RecentPlaysGrid = ({ songs, isLoading }: RecentPlaysGridProps) => {
+const RecentPlaysGrid = ({ songs, isLoading, onImageHover }: RecentPlaysGridProps) => {
 	const { setCurrentSong } = usePlayerStore(); // Get setCurrentSong from player store
 
 	if (isLoading) return <SectionGridSkeleton />; // Reuse existing skeleton
@@ -20,6 +21,8 @@ const RecentPlaysGrid = ({ songs, isLoading }: RecentPlaysGridProps) => {
 					key={song._id}
 					className='bg-zinc-800/40 p-2 rounded-md hover:bg-zinc-700/40 transition-all group cursor-pointer flex items-center relative'
 					onClick={() => setCurrentSong(song)} // Make the whole card clickable
+					onMouseEnter={() => onImageHover(song.imageUrl)}
+					onMouseLeave={() => onImageHover(null)}
 				>
 					<div className='w-16 h-16 mr-4 flex-shrink-0'>
 						<img
