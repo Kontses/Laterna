@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { usePlayerStore } from "@/stores/usePlayerStore";
-import { Album, Song } from "@/types";
+import { Album } from "@/types";
 import { Pause, Play } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { getAlbumById } from "@/lib/api";

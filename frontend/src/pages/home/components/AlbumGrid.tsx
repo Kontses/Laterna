@@ -48,7 +48,7 @@ const AlbumGrid = ({ albums, title, isLoading, showAllLink, onImageHover }: Albu
 								/>
 							</div>
 							{album.songs && album.songs.length > 0 && (
-								<PlayAlbumButton album={album} className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity translate-y-2 group-hover:translate-y-0" />
+								<PlayAlbumButton album={album} className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-all translate-y-0 group-hover:-translate-y-1" />
 							)}
 						</div>
 						<h3 className='font-medium mb-2 truncate'>{album.title}</h3>

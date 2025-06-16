@@ -1,7 +1,6 @@
 import { useParams } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
-import { Playlist, Song } from "@/types";
-import { usePlaylistStore } from "@/stores/usePlaylistStore";
+import { Playlist } from "@/types";
 import { Loader, Music, Pencil } from "lucide-react";
 import axios from "axios";
 import { ScrollArea } from "@/components/ui/scroll-area";

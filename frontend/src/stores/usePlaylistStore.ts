@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import axios from 'axios';
-import { Playlist, Song } from '@/types';
+import { Playlist } from '@/types';
 
 interface PlaylistStore {
 	playlists: Playlist[];
@@ -14,7 +14,7 @@ interface PlaylistStore {
 	deletePlaylist: (playlistId: string) => Promise<boolean>;
 }
 
-export const usePlaylistStore = create<PlaylistStore>((set, get) => ({
+export const usePlaylistStore = create<PlaylistStore>((set) => ({
 	playlists: [],
 	isLoading: false,
 	error: null,
@@ -161,4 +161,4 @@ export const usePlaylistStore = create<PlaylistStore>((set, get) => ({
 			return false;
 		}
 	},
-})); 
+}));
