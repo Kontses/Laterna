@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { usePlayerStore } from "@/stores/usePlayerStore";
-import { Laptop2, ListMusic, Mic2, Pause, Play, Repeat, Shuffle, SkipBack, SkipForward, Volume1, Info, Users, Settings, Plus, VolumeX, Volume2 } from "lucide-react";
+import { Laptop2, ListMusic, Mic2, Pause, Play, Repeat, Shuffle, SkipBack, SkipForward, Volume1, Info, Settings, Plus, VolumeX, Volume2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
@@ -24,10 +24,9 @@ const formatTime = (seconds: number) => {
 interface PlaybackControlsProps {
 	onToggleQueue: () => void;
 	onToggleAlbumDescription: () => void;
-	onToggleFriendsActivity: () => void;
 }
 
-export const PlaybackControls = ({ onToggleQueue, onToggleAlbumDescription, onToggleFriendsActivity }: PlaybackControlsProps) => {
+export const PlaybackControls = ({ onToggleQueue, onToggleAlbumDescription }: PlaybackControlsProps) => {
 	const { currentSong, isPlaying, togglePlay, playNext, playPrevious } = usePlayerStore();
 
 	const [volume, setVolume] = useState(75);
@@ -211,11 +210,6 @@ export const PlaybackControls = ({ onToggleQueue, onToggleAlbumDescription, onTo
 						disabled={!currentSong || !currentSong.albumId}
 					>
 						<Info className='h-4 w-4' />
-					</Button>
-
-					{/* Connect to device button */}
-					<Button size='icon' variant='ghost' className='hover:text-white text-zinc-400'>
-						<Laptop2 className='h-4 w-4' />
 					</Button>
 
 					{/* Streaming Quality Selector */}

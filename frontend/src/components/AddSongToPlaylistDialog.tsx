@@ -1,7 +1,5 @@
 import { Song } from '@/types';
-import { Plus } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { usePlaylistStore } from "@/stores/usePlaylistStore";
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
