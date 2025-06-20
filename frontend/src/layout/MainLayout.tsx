@@ -79,10 +79,9 @@ const MainLayout = () => {
 
 			{/* Pass callbacks to PlaybackControls and AlbumDescriptionPanel to control activeRightPanel */}
 			<PlaybackControls 
-				onToggleQueue={() => setActiveRightPanel(prev => prev === 'queue' ? 'friendsActivity' : 'queue')} 
-				onToggleAlbumDescription={() => setActiveRightPanel(prev => prev === 'albumDescription' ? 'friendsActivity' : 'albumDescription')} 
-				onToggleFriendsActivity={() => setActiveRightPanel(prev => prev === 'friendsActivity' ? 'friendsActivity' : 'friendsActivity')} // Callback for Friends Activity
-			/>
+            	onToggleQueue={() => setActiveRightPanel(prev => prev === 'queue' ? 'friendsActivity' : 'queue')} 
+            	onToggleAlbumDescription={() => setActiveRightPanel(prev => prev === 'albumDescription' ? 'friendsActivity' : 'albumDescription')} 
+            />
 		</div>
 	);
 };
