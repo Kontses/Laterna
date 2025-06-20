@@ -1,18 +1,19 @@
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { usePlayerStore } from "@/stores/usePlayerStore";
-import { Laptop2, ListMusic, Mic2, Pause, Play, Repeat, Shuffle, SkipBack, SkipForward, Volume1, Info, Users, Settings } from "lucide-react"; // Re-import Shuffle, SkipBack, SkipForward, Repeat
+import { Laptop2, ListMusic, Mic2, Pause, Play, Repeat, Shuffle, SkipBack, SkipForward, Volume1, Info, Users, Settings, Plus, VolumeX, Volume2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import toast from "react-hot-toast"; // Import toast
+import toast from "react-hot-toast";
 import {
 	Select,
 	SelectContent,
 	SelectItem,
 	SelectTrigger,
 	SelectValue,
-} from "@/components/ui/select"; // Import Select components
-import { VisuallyHidden } from "@radix-ui/react-visually-hidden"; // Correct import for VisuallyHidden
+} from "@/components/ui/select";
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
+import AddSongToPlaylistDialog from "@/components/AddSongToPlaylistDialog";
 
 const formatTime = (seconds: number) => {
 	const minutes = Math.floor(seconds / 60);
@@ -30,20 +31,18 @@ export const PlaybackControls = ({ onToggleQueue, onToggleAlbumDescription, onTo
 	const { currentSong, isPlaying, togglePlay, playNext, playPrevious } = usePlayerStore();
 
 	const [volume, setVolume] = useState(75);
-	const [prevVolume, setPrevVolume] = useState(75); // New state to store previous volume
+	const [prevVolume, setPrevVolume] = useState(75);
 	const [currentTime, setCurrentTime] = useState(0);
 	const [duration, setDuration] = useState(0);
 	const audioRef = useRef<HTMLAudioElement | null>(null);
-	const [streamingQuality, setStreamingQuality] = useState("good"); // Default to "good"
+	const [streamingQuality, setStreamingQuality] = useState("good");
 
 	useEffect(() => {
-		// Get the audio element from the store
 		const audio = usePlayerStore.getState().audioElement;
-		audioRef.current = audio; // Assign to local ref for time/duration/volume
+		audioRef.current = audio;
 
 		if (!audio) return;
 
-		// Set initial volume
 		audio.volume = volume / 100;
 
 		const updateTime = () => setCurrentTime(audio.currentTime);
@@ -105,15 +104,22 @@ export const PlaybackControls = ({ onToggleQueue, onToggleAlbumDescription, onTo
 								className='w-14 h-14 object-cover rounded-md'
 							/>
 							<div className='flex-1 min-w-0 flex flex-col'>
-								{currentSong?.albumId ? (
-									<Link to={`/albums/${currentSong.albumId}`} className='font-medium truncate hover:underline'>
-										{currentSong.title}
-									</Link>
-								) : (
-									<Link to={`/artists/${currentSong?.artistId}`} className='font-medium truncate hover:underline'>
-										{currentSong?.title}
-									</Link>
-								)}
+								<div className="flex items-center gap-x-2">
+									{currentSong?.albumId ? (
+										<Link to={`/albums/${currentSong.albumId}`} className='font-medium truncate hover:underline'>
+											{currentSong.title}
+										</Link>
+									) : (
+										<Link to={`/artists/${currentSong?.artistId}`} className='font-medium truncate hover:underline'>
+											{currentSong?.title}
+										</Link>
+									)}
+									<AddSongToPlaylistDialog song={currentSong}>
+										<Button size='icon' variant='ghost' className='hover:text-white text-zinc-400' disabled={!currentSong}>
+											<Plus className='h-4 w-4' />
+										</Button>
+									</AddSongToPlaylistDialog>
+								</div>
 
 								{currentSong?.artistId && (
 									<Link to={`/artists/${currentSong.artistId}`} className='text-sm text-zinc-400 truncate hover:underline'>
@@ -202,6 +208,7 @@ export const PlaybackControls = ({ onToggleQueue, onToggleAlbumDescription, onTo
 						variant='ghost'
 						className='hover:text-white text-zinc-400'
 						onClick={onToggleAlbumDescription}
+						disabled={!currentSong || !currentSong.albumId}
 					>
 						<Info className='h-4 w-4' />
 					</Button>
@@ -209,11 +216,6 @@ export const PlaybackControls = ({ onToggleQueue, onToggleAlbumDescription, onTo
 					{/* Connect to device button */}
 					<Button size='icon' variant='ghost' className='hover:text-white text-zinc-400'>
 						<Laptop2 className='h-4 w-4' />
-					</Button>
-
-					{/* Friends Activity button */}
-					<Button size='icon' variant='ghost' className='hover:text-white text-zinc-400' onClick={onToggleFriendsActivity}>
-						<Users className='h-4 w-4' />
 					</Button>
 
 					{/* Streaming Quality Selector */}
@@ -238,13 +240,14 @@ export const PlaybackControls = ({ onToggleQueue, onToggleAlbumDescription, onTo
 						</SelectContent>
 					</Select>
 
+					{/* Volume control */}
 					<div
 						className='flex items-center gap-2'
 						onWheel={(e) => {
 							if (!audioRef.current) return;
-							const newVolume = Math.max(0, Math.min(100, volume - e.deltaY * 0.1)); // Adjust sensitivity
+							const newVolume = Math.max(0, Math.min(100, volume - e.deltaY * 0.1));
 							setVolume(newVolume);
-							setPrevVolume(newVolume); // Update prevVolume as well
+							setPrevVolume(newVolume);
 							audioRef.current.volume = newVolume / 100;
 						}}
 					>
@@ -258,15 +261,20 @@ export const PlaybackControls = ({ onToggleQueue, onToggleAlbumDescription, onTo
 									setVolume(prevVolume);
 									audioRef.current.volume = prevVolume / 100;
 								} else {
-									setPrevVolume(volume); // Save current volume before muting
+									setPrevVolume(volume);
 									setVolume(0);
 									audioRef.current.volume = 0;
 								}
 							}}
 						>
-							<Volume1 className='h-4 w-4' />
+							{volume === 0 ? (
+								<VolumeX className='h-4 w-4' />
+							) : volume < 50 ? (
+								<Volume1 className='h-4 w-4' />
+							) : (
+								<Volume2 className='h-4 w-4' />
+							)}
 						</Button>
-
 						<Slider
 							value={[volume]}
 							max={100}

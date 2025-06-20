@@ -36,7 +36,7 @@ export const getRecentPlays = async (req, res, next) => {
 		if (!user) {
 			return res.status(404).json({ message: "User not found" });
 		}
-		res.status(200).json(user.recentPlays);
+		res.status(200).json(user.recentPlays.slice(0, 8));
 	} catch (error) {
 		next(error);
 	}
