@@ -103,9 +103,8 @@ const HomePage = () => {
 		>
 			<ScrollArea className='h-[calc(100vh-180px)]'>
 				<div className='p-4 sm:p-6'>
-					<h1 className='text-2xl sm:text-3xl font-bold mb-6'>
-						{greeting}
-						{user?.nickname ? ` ${user.nickname}!` : "!"} {greetingEmoji}
+					<h1 className="text-2xl sm:text-3xl font-bold mb-6 whitespace-nowrap">
+						{`${greeting}${user?.nickname ? ` ${user.nickname}!` : "!"} ${greetingEmoji}`}
 					</h1>
 					{/* Display Recent Plays Grid */}
 					<div className="mb-8">
