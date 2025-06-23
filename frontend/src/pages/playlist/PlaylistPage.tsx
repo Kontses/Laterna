@@ -1,7 +1,7 @@
 import { useParams } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
 import { Playlist } from "@/types";
-import { Clock, Download, Loader, Music, Pause, Pencil, Play, Plus, Library } from "lucide-react";
+import { Clock, Download, Loader, Music, Pause, Pencil, Play, Library } from "lucide-react";
 import axios from "axios";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import SongItem from "@/components/SongItem";
@@ -10,12 +10,6 @@ import { Button } from "@/components/ui/button";
 import PlaylistEditForm from "@/components/PlaylistEditForm";
 import { usePlayerStore } from "@/stores/usePlayerStore";
 import { usePlaylistStore } from "@/stores/usePlaylistStore";
-
-const formatDuration = (seconds: number) => {
-	const minutes = Math.floor(seconds / 60);
-	const remainingSeconds = Math.floor(seconds % 60); // Στρογγυλοποίηση των δευτερολέπτων
-	return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
-};
 
 const PlaylistPage = () => {
 	const { id } = useParams<{ id: string }>();

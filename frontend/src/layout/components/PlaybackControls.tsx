@@ -14,6 +14,8 @@ import {
 } from "@/components/ui/select";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import AddSongToPlaylistDialog from "@/components/AddSongToPlaylistDialog";
+import { usePlaylistStore } from "@/stores/usePlaylistStore";
+import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 
 const formatTime = (seconds: number) => {
 	const minutes = Math.floor(seconds / 60);
@@ -28,6 +30,7 @@ interface PlaybackControlsProps {
 
 export const PlaybackControls = ({ onToggleQueue, onToggleAlbumDescription }: PlaybackControlsProps) => {
 	const { currentSong, isPlaying, togglePlay, playNext, playPrevious } = usePlayerStore();
+	const { addSongToPlaylist } = usePlaylistStore();
 
 	const [volume, setVolume] = useState(75);
 	const [prevVolume, setPrevVolume] = useState(75);
@@ -35,6 +38,7 @@ export const PlaybackControls = ({ onToggleQueue, onToggleAlbumDescription }: Pl
 	const [duration, setDuration] = useState(0);
 	const audioRef = useRef<HTMLAudioElement | null>(null);
 	const [streamingQuality, setStreamingQuality] = useState("good");
+	const [isAddSongToPlaylistDialogOpen, setIsAddSongToPlaylistDialogOpen] = useState(false);
 
 	useEffect(() => {
 		const audio = usePlayerStore.getState().audioElement;
@@ -90,6 +94,21 @@ export const PlaybackControls = ({ onToggleQueue, onToggleAlbumDescription }: Pl
 		}
 	};
 
+	const handleAddSongToPlaylist = async (playlistId: string, songId: string) => {
+		try {
+			const updatedPlaylist = await addSongToPlaylist(playlistId, songId);
+			if (updatedPlaylist) {
+				toast.success(`Song added to ${updatedPlaylist.name}!`);
+			} else {
+				toast.error("Failed to add song to playlist.");
+			}
+		} catch (error) {
+			console.error("Error adding song to playlist:", error);
+			toast.error("An error occurred while adding the song.");
+		}
+		setIsAddSongToPlaylistDialogOpen(false);
+	};
+
 	return (
 		<footer className='h-20 sm:h-24 bg-zinc-900 border-t border-zinc-800 px-4'>
 			<div className='flex justify-between items-center h-full max-w-[1800px] mx-auto'>
@@ -113,11 +132,19 @@ export const PlaybackControls = ({ onToggleQueue, onToggleAlbumDescription }: Pl
 											{currentSong?.title}
 										</Link>
 									)}
-									<AddSongToPlaylistDialog song={currentSong}>
-										<Button size='icon' variant='ghost' className='hover:text-white text-zinc-400' disabled={!currentSong}>
-											<Plus className='h-4 w-4' />
-										</Button>
-									</AddSongToPlaylistDialog>
+									<Dialog open={isAddSongToPlaylistDialogOpen} onOpenChange={setIsAddSongToPlaylistDialogOpen}>
+										<DialogTrigger asChild>
+											<Button size='icon' variant='ghost' className='hover:text-white text-zinc-400' disabled={!currentSong}>
+												<Plus className='h-4 w-4' />
+											</Button>
+										</DialogTrigger>
+										<AddSongToPlaylistDialog
+											song={currentSong}
+											isOpen={isAddSongToPlaylistDialogOpen}
+											onClose={() => setIsAddSongToPlaylistDialogOpen(false)}
+											onAddSong={handleAddSongToPlaylist}
+										/>
+									</Dialog>
 								</div>
 
 								{currentSong?.artistId && (

@@ -1,7 +1,6 @@
 import { Song } from '@/types';
 import { cn } from '@/lib/utils';
 import { formatDuration } from '@/lib/utils'; // Assuming you have this utility
-import { usePlayerStore } from '@/stores/usePlayerStore';
 import { Plus, Download, Play } from 'lucide-react';
 import AddSongToPlaylistDialog from "@/components/AddSongToPlaylistDialog"; // Import the new dialog component
 import { Button } from "@/components/ui/button";
