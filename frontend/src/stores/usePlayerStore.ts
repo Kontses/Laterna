@@ -23,6 +23,7 @@ interface PlayerStore {
 	reorderQueue: (oldIndex: number, newIndex: number) => void; // Add new function for reordering
 	playSong: (song: Song) => void; // Explicit play function
 	pauseSong: () => void; // Explicit pause function
+	playPlaylist: (songs: Song[], startIndex?: number) => void; // Add playPlaylist function
 }
 
 export const usePlayerStore = create<PlayerStore>((set, get) => ({
@@ -82,8 +83,25 @@ export const usePlayerStore = create<PlayerStore>((set, get) => ({
 		});
 	},
 
+	playPlaylist: (songs: Song[], startIndex = 0) => {
+		if (songs.length === 0) return;
+		const song = songs[startIndex];
+		get().playSong(song);
+		set({
+			queue: songs,
+			currentIndex: startIndex,
+		});
+	},
+
 	setCurrentSong: (song: Song | null) => {
-		if (!song) return;
+		if (!song) {
+			set({
+				currentSong: null,
+				isPlaying: false,
+			});
+			get().audioElement?.pause();
+			return;
+		}
 		get().playSong(song);
 	},
 

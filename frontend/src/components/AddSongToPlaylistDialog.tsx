@@ -1,41 +1,42 @@
 import { Song } from '@/types';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { usePlaylistStore } from "@/stores/usePlaylistStore";
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { toast } from 'sonner';
 
 interface AddSongToPlaylistDialogProps {
-    song: Song;
+    song: Song | null; // Allow song to be null
     children: React.ReactNode; // For the DialogTrigger
+    isOpen: boolean;
+    onClose: () => void;
+    onAddSong: (playlistId: string, songId: string) => Promise<void>;
 }
 
-const AddSongToPlaylistDialog = ({ song, children }: AddSongToPlaylistDialogProps) => {
-    const { playlists, fetchPlaylists, addSongToPlaylist } = usePlaylistStore();
-    const [isAddPlaylistDialogOpen, setIsAddPlaylistDialogOpen] = useState(false);
+const AddSongToPlaylistDialog = ({ song, children, isOpen, onClose, onAddSong }: AddSongToPlaylistDialogProps) => {
+    const { playlists, fetchPlaylists } = usePlaylistStore();
 
     useEffect(() => {
-        if (isAddPlaylistDialogOpen) {
+        if (isOpen) {
             fetchPlaylists();
         }
-    }, [isAddPlaylistDialogOpen, fetchPlaylists]);
+    }, [isOpen, fetchPlaylists]);
 
     const handleAddToPlaylist = async (playlistId: string) => {
+        if (!song) {
+            toast.error("No song selected to add to playlist.");
+            return;
+        }
         try {
-            const updatedPlaylist = await addSongToPlaylist(playlistId, song._id);
-            if (updatedPlaylist) {
-                toast.success(`Song added to ${updatedPlaylist.name}!`);
-            } else {
-                toast.error("Failed to add song to playlist.");
-            }
+            await onAddSong(playlistId, song._id);
         } catch (error) {
-            console.error("Error adding song to playlist:", error);
+            console.error("Error adding song to playlist (from dialog):", error);
             toast.error("An error occurred while adding the song.");
         }
-        setIsAddPlaylistDialogOpen(false);
+        onClose();
     };
 
     return (
-        <Dialog open={isAddPlaylistDialogOpen} onOpenChange={setIsAddPlaylistDialogOpen}>
+        <Dialog open={isOpen} onOpenChange={onClose}>
             <DialogTrigger asChild>
                 {children}
             </DialogTrigger>

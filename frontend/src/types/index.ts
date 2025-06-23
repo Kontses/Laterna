@@ -10,6 +10,7 @@ export interface Song {
 	createdAt: string;
 	updatedAt: string;
 	playlistId?: string;
+	dateAdded?: string;
 }
 
 export interface Album {

@@ -1,13 +1,21 @@
 import { useParams } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
 import { Playlist } from "@/types";
-import { Loader, Music, Pencil } from "lucide-react";
+import { Clock, Download, Loader, Music, Pause, Pencil, Play, Plus, Library } from "lucide-react";
 import axios from "axios";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import SongItem from "@/components/SongItem";
 import { toast } from 'sonner';
 import { Button } from "@/components/ui/button";
 import PlaylistEditForm from "@/components/PlaylistEditForm";
+import { usePlayerStore } from "@/stores/usePlayerStore";
+import { usePlaylistStore } from "@/stores/usePlaylistStore";
+
+const formatDuration = (seconds: number) => {
+	const minutes = Math.floor(seconds / 60);
+	const remainingSeconds = Math.floor(seconds % 60); // Στρογγυλοποίηση των δευτερολέπτων
+	return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
+};
 
 const PlaylistPage = () => {
 	const { id } = useParams<{ id: string }>();
@@ -16,6 +24,8 @@ const PlaylistPage = () => {
 	const [error, setError] = useState<string | null>(null);
 	const fileInputRef = useRef<HTMLInputElement>(null);
 	const [isEditing, setIsEditing] = useState(false);
+	const { currentSong, isPlaying, playPlaylist, togglePlay } = usePlayerStore();
+	const { addSongToPlaylist } = usePlaylistStore();
 
 	useEffect(() => {
 		const fetchPlaylistDetails = async () => {
@@ -27,16 +37,9 @@ const PlaylistPage = () => {
 
 			try {
 				const token = localStorage.getItem("token");
-				if (!token) {
-					setError("Authentication token not found.");
-					setIsLoading(false);
-					return;
-				}
-
+				const headers = token ? { Authorization: `Bearer ${token}` } : {};
 				const response = await axios.get(`/api/playlists/${id}`, {
-					headers: {
-						Authorization: `Bearer ${token}`,
-					},
+					headers,
 				});
 				setPlaylist(response.data);
 			} catch (err: any) {
@@ -133,6 +136,39 @@ const PlaylistPage = () => {
 		}
 	};
 
+	const handlePlayPlaylist = () => {
+		if (!playlist) return;
+
+		const isCurrentPlaylistPlaying = playlist?.songs.some((song) => song._id === currentSong?._id);
+		if (isCurrentPlaylistPlaying) togglePlay();
+		else {
+			playPlaylist(playlist?.songs, 0);
+		}
+	};
+
+	const handlePlaySong = (index: number) => {
+		if (!playlist) return;
+		playPlaylist(playlist?.songs, index);
+	};
+
+	const handleDownloadPlaylist = () => {
+		toast.info('Download playlist functionality is for future upgrade.');
+	};
+
+	const handleAddSongToPlaylist = async (playlistId: string, songId: string) => {
+		try {
+			const updatedPlaylist = await addSongToPlaylist(playlistId, songId);
+			if (updatedPlaylist) {
+				toast.success(`Song added to ${updatedPlaylist.name}!`);
+			} else {
+				toast.error("Failed to add song to playlist.");
+			}
+		} catch (error) {
+			console.error("Error adding song to playlist:", error);
+			toast.error("An error occurred while adding the song.");
+		}
+	};
+
 	if (isLoading) {
 		return (
 			<div className='flex items-center justify-center h-full'>
@@ -196,22 +232,54 @@ const PlaylistPage = () => {
 						<p className='text-sm text-zinc-400 mt-1'>
 							Created by {playlist.user?.nickname || "Unknown User"} • {playlist.songs.length} songs
 						</p>
-						<Button onClick={() => setIsEditing(true)} variant="ghost" size="sm" className='mt-4 text-violet-400 hover:bg-violet-900/40 hover:text-white'>
-							<Pencil className="mr-2 h-4 w-4" />
-							Edit Playlist
-						</Button>
 					</div>
+				</div>
+
+				{/* play button and download button */}
+				<div className='px-6 pb-4 flex items-center gap-6'>
+					<Button
+						onClick={handlePlayPlaylist}
+						size='icon'
+						className='w-14 h-14 rounded-full bg-purple-500 hover:bg-purple-400 hover:scale-105 transition-all'
+					>
+						{isPlaying && playlist?.songs.some((song) => song._id === currentSong?._id) ? (
+							<Pause className='h-7 w-7' fill='black' />
+						) : (
+							<Play className='h-7 w-7' fill='black' />
+						)}
+					</Button>
+					<Button
+						variant="ghost"
+						size="sm"
+						className="hover:bg-zinc-700 opacity-70"
+						onClick={handleDownloadPlaylist}
+					>
+						<Download className="mr-2 h-4 w-4" />
+						Download Playlist
+					</Button>
+					<Button onClick={() => setIsEditing(true)} variant="ghost" size="sm" className='text-violet-400 hover:bg-violet-900/40 hover:text-white'>
+						<Pencil className="mr-2 h-4 w-4" />
+						Edit Playlist
+					</Button>
 				</div>
 
 				<div className='p-6'>
 					<h2 className='text-2xl font-bold mb-4'>Songs</h2>
+					<div className='grid grid-cols-[16px_5fr_80px_40px_40px_60px] gap-4 px-10 py-2 text-sm text-zinc-400 border-b border-white/5'>
+						<div>#</div>
+						<div>Title</div>
+						<div className='flex items-center justify-end'>Date Added</div>
+						<div className='flex items-center justify-end'><Library className='h-4 w-4' /></div>
+						<div className='flex items-center justify-end'><Download className='h-4 w-4' /></div>
+						<div className='flex items-center justify-end'><Clock className='h-4 w-4' /></div>
+					</div>
 					{
 						playlist.songs.length === 0 ? (
 							<p className='text-zinc-400'>This playlist has no songs yet.</p>
 						) : (
 							<div className='space-y-4'>
-								{playlist.songs.map((song) => (
-									<SongItem key={song._id} song={song} />
+								{playlist.songs.map((song, index) => (
+									<SongItem key={song._id} song={song} index={index} handlePlaySong={handlePlaySong} isCurrentSong={currentSong?._id === song._id} isPlaying={isPlaying} onAddSongToPlaylist={handleAddSongToPlaylist} />
 								))}
 							</div>
 						)
