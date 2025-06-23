@@ -178,7 +178,7 @@ const LeftSidebar = () => {
 												<p className='text-sm text-zinc-400 truncate'>Playlist • {playlist.user?.nickname || "Unknown User"}</p>
 											</div>
 										</Link>
-										<PlayPlaylistButton playlist={playlist} className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity" />
+										<PlayPlaylistButton playlist={playlist} />
 									</div>
 								))
 							) : (
