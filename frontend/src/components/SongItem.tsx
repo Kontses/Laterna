@@ -6,6 +6,7 @@ import AddSongToPlaylistDialog from "@/components/AddSongToPlaylistDialog"; // I
 import { Button } from "@/components/ui/button";
 import { toast } from 'sonner';
 import { useState } from 'react';
+import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 
 interface SongItemProps {
 	song: Song;
@@ -63,24 +64,23 @@ const SongItem = ({ song, index, handlePlaySong, isCurrentSong, isPlaying, onAdd
 
 			{/* Column 4: Add to Playlist Button */}
 			<div className='flex items-center justify-end'>
-				<AddSongToPlaylistDialog
-					song={song}
-					isOpen={isAddPlaylistDialogOpen}
-					onClose={() => setIsAddPlaylistDialogOpen(false)}
-					onAddSong={onAddSongToPlaylist}
-				>
-					<Button
-						variant='ghost'
-						size='icon'
-						className='rounded-full w-8 h-8 hover:bg-zinc-700'
-						onClick={(e) => {
-							e.stopPropagation();
-							setIsAddPlaylistDialogOpen(true);
-						}}
-					>
-						<Plus className='size-4 text-zinc-400 hover:text-white' />
-					</Button>
-				</AddSongToPlaylistDialog>
+				<Dialog open={isAddPlaylistDialogOpen} onOpenChange={setIsAddPlaylistDialogOpen}>
+					<DialogTrigger asChild>
+						<Button
+							variant='ghost'
+							size='icon'
+							className='rounded-full w-8 h-8 hover:bg-zinc-700'
+						>
+							<Plus className='size-4 text-zinc-400 hover:text-white' />
+						</Button>
+					</DialogTrigger>
+					<AddSongToPlaylistDialog
+						song={song}
+						isOpen={isAddPlaylistDialogOpen}
+						onClose={() => setIsAddPlaylistDialogOpen(false)}
+						onAddSong={onAddSongToPlaylist}
+					/>
+				</Dialog>
 			</div>
 
 			{/* Column 5: Download Button */}
