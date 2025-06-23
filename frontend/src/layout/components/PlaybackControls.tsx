@@ -192,7 +192,7 @@ export const PlaybackControls = ({ onToggleQueue, onToggleAlbumDescription }: Pl
 				{/* volume controls and right-side icons */}
 				<div className='hidden sm:flex items-center gap-4 min-w-[180px] w-[30%] justify-end'>
 					{/* Microphone button */}
-					<Button size='icon' variant='ghost' className='hover:text-white text-zinc-400'>
+					<Button size='icon' variant='ghost' className='hover:text-white text-zinc-400' onClick={() => toast.error('This is for future upgrade')}>
 						<Mic2 className='h-4 w-4' />
 					</Button>
 
